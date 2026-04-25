@@ -2,7 +2,7 @@
 
 **Official prizes page:** https://ethglobal.com/events/openagents/prizes
 
-**Total confirmed prize pool:** $35,000 across 5 sponsors (additional World prizes TBD)
+**Confirmed prize pool:** $35,000 across 5 sponsors (ETHGlobal pool brings total to $50,000+)
 
 ---
 
@@ -12,7 +12,7 @@ Largest sponsor. Two tracks, $7,500 each.
 
 ### Track A: Best Agent Framework, Tooling & Core Extensions — $7,500
 
-Build framework-level work: core extensions, new agent frameworks, or developer tooling deployed on 0G.
+Build core extensions, new frameworks inspired by OpenClaw, or developer tooling deployed on 0G.
 Focus: architectures, developer tooling, and infrastructure primitives.
 
 | Place | Prize |
@@ -25,12 +25,14 @@ Focus: architectures, developer tooling, and infrastructure primitives.
 
 ### Track B: Best Autonomous Agents, Swarms & iNFT Innovations — $7,500
 
-Build capable autonomous agents, multi-agent swarms, or iNFT-powered projects on 0G.
+Build capable autonomous agents, multi-agent swarms, or iNFT-powered projects (ERC-7857) on 0G.
 Focus: long-running goal-driven agents and emergent multi-agent collaboration.
 
 | Award | Prize |
 |-------|-------|
 | Up to 5 teams | $1,500 each |
+
+**Required for both tracks:** Contract addresses, public GitHub repo, demo video (<3 min), team contact (Telegram & X).
 
 ---
 
@@ -38,7 +40,7 @@ Focus: long-running goal-driven agents and emergent multi-agent collaboration.
 
 ### Best Uniswap API Integration — $5,000
 
-Build agents that swap and settle value onchain using Uniswap's infrastructure.
+Build agents that trade, coordinate with other agents, or invent DeFi primitives using Uniswap's infrastructure.
 Focus: transparency, composability, and real execution.
 
 | Place | Prize |
@@ -47,7 +49,7 @@ Focus: transparency, composability, and real execution.
 | 2nd | $1,500 |
 | 3rd | $1,000 |
 
-**Special requirement:** Submissions must include a `FEEDBACK.md` file documenting developer experience, bugs, and documentation gaps.
+**Hard requirement:** Submissions must include a `FEEDBACK.md` documenting developer experience, bugs, documentation gaps, and DX friction.
 
 ---
 
@@ -55,7 +57,7 @@ Focus: transparency, composability, and real execution.
 
 ### Best Application of Agent eXchange Layer (AXL) — $5,000
 
-Build peer-to-peer agent communication projects using AXL.
+Build peer-to-peer agent communication without centralized coordination using AXL.
 Suggested areas: agent simulations, decentralized messaging platforms, discovery systems.
 
 | Place | Prize |
@@ -64,7 +66,10 @@ Suggested areas: agent simulations, decentralized messaging platforms, discovery
 | 2nd | $1,500 |
 | 3rd | $1,000 |
 
-**Hard requirement:** Must demonstrate communication across **separate AXL nodes** (not just in-process). No centralized message broker replacing what AXL provides.
+**Hard requirements:**
+- Must demonstrate communication across **separate AXL nodes** (not just in-process)
+- No centralized message broker replacing what AXL provides
+- All winners fast-tracked into the **Gensyn Foundation grant programme**
 
 ---
 
@@ -74,7 +79,7 @@ Two equal sub-tracks, $2,500 each.
 
 ### Best ENS Integration for AI Agents — $2,500
 
-Projects where ENS does real work for agent identity, discoverability, or coordination.
+Projects where ENS does real work: resolving addresses, storing metadata, gating access, agent identity.
 
 | Place | Prize |
 |-------|-------|
@@ -84,7 +89,7 @@ Projects where ENS does real work for agent identity, discoverability, or coordi
 
 ### Most Creative Use of ENS — $2,500
 
-Novel ENS applications beyond standard name resolution: credential storage, privacy features, etc.
+Novel ENS applications beyond standard name resolution: credential storage, privacy features, cross-chain identity.
 
 | Place | Prize |
 |-------|-------|
@@ -111,6 +116,7 @@ Two focus areas:
 ### Builder Feedback Bounty — $500
 
 Actionable feedback on UX friction, bugs, documentation gaps, or feature requests.
+Open to any team using KeeperHub, regardless of final placement.
 
 | Award | Prize |
 |-------|-------|
@@ -118,14 +124,14 @@ Actionable feedback on UX friction, bugs, documentation gaps, or feature request
 
 ---
 
-## Strategy Notes
+## Track Selection Strategy
 
-- **Max 3 tracks** per submission — pick tracks where your stack naturally overlaps
-- **0G + Gensyn** can stack well if building a multi-agent framework with P2P comms
-- **Uniswap + ENS** can stack if building an agent with onchain identity + DeFi execution
+- **Max 3 tracks** per submission
+- **0G + Gensyn** stack well if building a multi-agent framework with P2P comms
+- **Uniswap + ENS** stack if building an agent with onchain identity + DeFi execution
 - **KeeperHub feedback bounty** is low-hanging fruit if you integrate KeeperHub at all
-- Uniswap requires a `FEEDBACK.md` — budget time to write it
-- Gensyn requires demonstrable cross-node AXL communication — plan infra accordingly
+- Uniswap requires `FEEDBACK.md` — budget time to write it
+- Gensyn requires cross-node AXL comms — plan infra accordingly
 
 ---
 
@@ -133,4 +139,3 @@ Actionable feedback on UX friction, bugs, documentation gaps, or feature request
 
 - https://ethglobal.com/events/openagents/prizes
 - https://ethglobal.com/events/openagents/info
-- https://x.com/ETHGlobal/status/2034705413967589426
