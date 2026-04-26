@@ -1,28 +1,28 @@
-# ETHGlobal Open Agents — スポンサー調査レポート
+# ETHGlobal Open Agents — Sponsor Research
 
-**総賞金:** $50,000+ (スポンサー $35,000 + ETHGlobal pool)
+**Total prize pool:** $50,000+ ($35,000 from sponsors + ETHGlobal pool)
 
 ---
 
-## 1. 0G (Zero Gravity) — $15,000 【最大スポンサー】
+## 1. 0G (Zero Gravity) — $15,000 (Largest Sponsor)
 
-### 概要
-分散型AI インフラネットワーク。「AIエージェントのためのOS」として3層を提供:
-- **0G Storage**: 分散ファイル/Blobストレージ（AIモデル重みやエージェントメモリ向け）
-- **0G DA**: 高スループットデータAvailabilityレイヤー（50GB/s目標）
-- **0G Compute**: 分散GPU/CPUコンピュートマーケットプレイス
-- **0G Chain**: EVM互換L1（CosmosSDK + Ethermint）、Chain ID: 16600 (Newton testnet)
+### Overview
+Decentralized AI infrastructure network positioning itself as "the OS for AI agents." Provides three infrastructure layers:
+- **0G Storage**: Decentralized file/blob storage for AI model weights and agent memory
+- **0G DA**: High-throughput data availability layer (targeting 50 GB/s)
+- **0G Compute**: Decentralized GPU/CPU compute marketplace
+- **0G Chain**: EVM-compatible L1 (Cosmos SDK + Ethermint), Chain ID: 16600 (Newton testnet)
 
-### 開発者ツール
+### Developer Tools
 ```
 npm install @0glabs/0g-ts-sdk
 ```
 ```typescript
-// ファイルアップロード
+// File upload
 const file = await ZgFile.fromFilePath("./weights.bin");
 const tx = await indexer.upload(file, rpc, signer);
 
-// KV Store（エージェントメモリ）
+// KV Store (agent memory)
 const kv = new KVStore(client);
 await kv.set(streamId, key, value);
 ```
@@ -30,8 +30,8 @@ await kv.set(streamId, key, value);
 - Faucet: `faucet.0g.ai`
 - Docs: `docs.0g.ai`
 
-### ERC-7857 (iNFT標準)
-NFTにAIエージェントのモデル重み + メモリ + 所有権を内包する標準:
+### ERC-7857 (iNFT Standard)
+Standard for encoding AI agent model weights, memory, and ownership into an NFT:
 ```solidity
 interface IERC7857 {
     function agentModel(uint256 tokenId) external view returns (bytes32 modelCommitment);
@@ -40,40 +40,40 @@ interface IERC7857 {
 }
 ```
 
-### 2トラック
-- **Track A** ($7,500): エージェントフレームワーク・ツーリング・Core拡張
-- **Track B** ($7,500): 自律エージェント・Swarm・iNFT実装 (ERC-7857)
+### Two Tracks
+- **Track A** ($7,500): Best Agent Framework, Tooling & Core Extensions on 0G
+- **Track B** ($7,500): Best Autonomous Agents, Swarms & iNFT Innovations (ERC-7857)
 
-### 必須要件
-- コントラクトアドレス公開
-- GitHub repo公開
-- デモ動画 (3分以内)
-- Telegram & X連絡先
+### Submission Requirements
+- Public contract addresses
+- Public GitHub repo
+- Demo video (under 3 minutes)
+- Telegram & X contact info
 
-### 勝ち筋
-**「譲渡可能メモリ付きiNFT Agentスウォーム」**
-- 各エージェント = ERC-7857 iNFT (0G Chain上)
-- モデル重み → 0G Storage
-- ワーキングメモリ → 0G KV Store
-- NFT譲渡時に新オーナーがメモリを引き継ぎ
-- Track A + Track B両方に同時申請可能
+### Win Strategy
+**"iNFT Agent Swarm with Transferable Memory"**
+- Each agent = ERC-7857 iNFT on 0G Chain
+- Model weights stored in 0G Storage
+- Working memory in 0G KV Store
+- New owner inherits memory on NFT transfer
+- Can apply to both Track A and Track B simultaneously
 
 ---
 
 ## 2. Uniswap Foundation — $5,000
 
-### 概要
-Uniswap v4 hooks + Universal Router + Permit2を使ったエージェントDeFi統合。
-**必須**: `FEEDBACK.md`（DX摩擦・バグ・ドキュメント不足を記録）
+### Overview
+Agent DeFi integration using Uniswap v4 hooks + Universal Router + Permit2.
+**Required:** `FEEDBACK.md` documenting DX friction, bugs, and documentation gaps.
 
-### 主要パッケージ
-| パッケージ | 用途 |
-|----------|------|
-| `@uniswap/v4-sdk` | v4スワップ/LP calldata構築 |
-| `@uniswap/v4-core` | ABI + PoolManager型定義 |
-| `@uniswap/universal-router` | スワップ実行エントリポイント |
-| `@uniswap/permit2` | 署名ベーストークン承認 |
-| `@uniswap/smart-order-router` | 自前ルーティングエンジン |
+### Key Packages
+| Package | Purpose |
+|---------|---------|
+| `@uniswap/v4-sdk` | v4 swap/LP calldata construction |
+| `@uniswap/v4-core` | ABI + PoolManager type definitions |
+| `@uniswap/universal-router` | Single swap execution entry point |
+| `@uniswap/permit2` | Signature-based token approvals |
+| `@uniswap/smart-order-router` | Self-hosted routing engine |
 
 ### Routing API
 ```
@@ -85,167 +85,165 @@ GET https://api.uniswap.org/v2/quote
   &protocols=v2,v3,v4
 ```
 
-### v4 Hooksの仕組み
-8つのライフサイクルコールバック (`beforeSwap`, `afterSwap`, etc.)。
-エージェント活用例:
-- afterSwapでLP自動リバランス
-- beforeSwapで動的手数料調整（ボラティリティ連動）
-- TWAMM hookで大口注文を分割実行
+### v4 Hooks
+Eight lifecycle callbacks (`beforeSwap`, `afterSwap`, etc.). Agent use cases:
+- Auto-rebalance LP position in `afterSwap`
+- Dynamic fee adjustment tied to volatility in `beforeSwap`
+- TWAMM hook to split large orders over time
 
-### MEV対策
-- Flashbots Protect RPC: `https://rpc.flashbots.net`（RPCエンドポイント切り替えのみ）
+### MEV Protection
+- Flashbots Protect RPC: `https://rpc.flashbots.net` (just swap the RPC endpoint)
 
-### 勝ち筋
-**DeFiポートフォリオエージェント**:
-1. Routing API → 最適ルート取得
-2. Permit2で承認 → Universal Routerで実行
-3. v4 hookでアクション記録（透明性）
-4. 自然言語 → スワップ実行
+### Win Strategy
+**DeFi Portfolio Agent:**
+1. Call Routing API to get optimal route
+2. Approve via Permit2, execute via Universal Router
+3. Log actions on-chain via v4 hook (transparency)
+4. Natural language → swap execution
 
-### FEEDBACK.md（$500ボーナス獲得のコツ）
-- 具体的なエラーメッセージと再現手順を記録
-- Rate limitに当たった時刻・入力値を記載
-- v4 SDKドキュメントで詰まった箇所を列挙
-- 「何を検索したか」も書く（ドキュメントの発見性問題）
+### FEEDBACK.md Tips (for the $500 bonus)
+- Log specific error messages with exact inputs and timestamps
+- Record when and how you hit rate limits
+- Note every point in the v4 SDK docs where you got stuck
+- Include what you searched for that returned unhelpful results (discoverability signal)
 
 ---
 
 ## 3. Gensyn — $5,000
 
-### 概要
-分散型ML計算ネットワーク。**AXL (Agent eXchange Layer)** = P2Pエージェント通信プロトコル。
-中央ブローカーなしでエージェント間のメッセージ/タスク交換を実現。
+### Overview
+Decentralized ML compute network. **AXL (Agent eXchange Layer)** = P2P agent communication protocol enabling message/task exchange between agents without a central broker.
 
-### 技術スタック
-- トランスポート: **libp2p** (Gensyn RL Swarmと同スタック)
-- メッセージング: GossipSub (pub/sub)
-- ノード発見: mDNS (ローカル) + Kademlia DHT (広域)
-- SDK: Python中心（TypeScript bindingの可能性あり）
+### Tech Stack
+- Transport: **libp2p** (same stack as Gensyn RL Swarm)
+- Messaging: GossipSub (pub/sub)
+- Peer discovery: mDNS (local) + Kademlia DHT (wide-area)
+- SDK: Python-first (TypeScript bindings possible)
 
-### 必須要件
-- **別々のAXLノードでの通信を実証** (同一プロセス内は不可)
-- 中央メッセージブローカーを使わない
-- Dockerコンテナ2つで別ノードを満たせる
+### Hard Requirements
+- **Must demonstrate communication across separate AXL nodes** (in-process does not qualify)
+- No centralized message broker replacing AXL
+- Two Docker containers satisfy the separate-node requirement
 
 ```bash
-# 最小構成（2コンテナ）
+# Minimum viable setup (2 containers)
 docker run gensyn/axl-node --port=8001  # Node A
 docker run gensyn/axl-node --port=8002 --bootstrap=.../Node-A  # Node B
 ```
 
-### 勝ち筋
-**マルチエージェント研究チーム**（24-48h以内に実装可能）:
-- 検索エージェント・コード実行エージェント・統合エージェントが各AXLノードで動作
-- AXLのP2P pub/subでタスクを分散
-- `docker ps`で2コンテナが別ノードとして動いている様子をデモ動画に入れる
+### Win Strategy
+**Multi-Agent Research Team** (buildable in 24-48h):
+- Search agent, code-execution agent, synthesis agent each run on separate AXL nodes
+- Tasks distributed via AXL P2P pub/sub
+- Show `docker ps` with two containers in the demo video to clearly evidence separate nodes
 
-**注意**: 全優勝チームがGensyn Foundationグラントプログラムに推薦される。
+**Note:** All winners are fast-tracked into the Gensyn Foundation grant programme.
 
 ---
 
 ## 4. ENS — $5,000
 
-### 概要
-AIエージェントのオンチェーンアイデンティティ。ENS名でエージェントを識別・発見・認証。
+### Overview
+On-chain identity for AI agents. Identify, discover, and authenticate agents via ENS names.
 
-### 2トラック
-- **Best ENS Integration for AI Agents** ($2,500): 実際にENSが機能する統合
-- **Most Creative Use of ENS** ($2,500): 資格情報ストレージ・プライバシー・クロスチェーンIDなど
+### Two Tracks
+- **Best ENS Integration for AI Agents** ($2,500): ENS doing real work in the project
+- **Most Creative Use of ENS** ($2,500): credential storage, privacy features, cross-chain identity
 
-### 主要ツール
+### Key Tools
 ```
 npm install @ensdomains/ensjs viem
 ```
 
 ```typescript
-// viem組み込み（依存ゼロ）
+// viem built-in (zero extra deps)
 const addr = await getEnsAddress(client, { name: 'agent-42.myfleet.eth' })
 const endpoint = await getEnsText(client, { name: 'agent-42.myfleet.eth', key: 'agent.endpoint' })
 ```
 
-### エージェント用テキストレコード（推奨キー）
+### Recommended Text Record Keys for Agents
 ```
 agent.capabilities  →  "search,code,finance"
 agent.model         →  "claude-3-5-sonnet"
 agent.endpoint      →  "https://api.example.com/agent/42"
-agent.pubkey        →  "0x..." (署名公開鍵)
-agent.schema        →  OpenAPI JSONのURL
+agent.pubkey        →  "0x..." (signing public key)
+agent.schema        →  URL to OpenAPI JSON
 ```
 
-### CCIP-Read（オフチェーンサブドメイン）
-EIP-3668によりガスゼロでサブドメインを発行可能:
-- `myagent.myfleet.eth` を1リクエストで即座に登録
-- Cloudflare Workersで実装可能（実質無料・スケーラブル）
+### CCIP-Read (Off-Chain Subdomains)
+EIP-3668 enables gasless subdomain issuance:
+- Register `myagent.myfleet.eth` instantly via an API call, no gas
+- Implement with Cloudflare Workers (essentially free and scalable)
 
-### NameWrapper（ERC-1155）
-- サブドメインをNFTとして発行（エージェント資格証明）
-- Fuse（権限フラグ）で制限設定
-- 有効期限付きサブドメイン（時限エージェント資格）
+### NameWrapper (ERC-1155)
+- Issue subdomains as NFTs (agent credential tokens)
+- Set fuses to restrict permissions
+- Expiry dates for time-limited agent credentials
 
-### 勝ち筋
-**ENSネイティブエージェントレジストリ（Track 1）**:
-- `agents.eth` をCCIP-Readリゾルバで構築
-- ガス不要のエージェント登録
-- エージェントがENSテキストレコードで他エージェントを自律発見
-- NameWrapperで資格NFT発行・失効
+### Win Strategies
+**ENS-native agent registry (Track 1):**
+- Build `agents.eth` with a CCIP-Read off-chain resolver
+- Gasless agent registration
+- Agents autonomously discover each other via ENS text records
+- NameWrapper for credential NFT issuance and revocation
 
-**ZK資格証明（Track 2）**:
-- 安全性評価合格をENSテキストレコードに保存
-- ZK証明で発行者の秘密鍵を開示せずオンチェーン検証
+**ZK credentials (Track 2):**
+- Store safety evaluation results as ENS text records
+- ZK proof allows on-chain verification without revealing the issuer's private key
 
 ---
 
 ## 5. KeeperHub — $5,000
 
-### 概要
-オンチェーン自動実行レイヤー（keeper型ネットワーク）。
-**注意**: WebSearchが使えず詳細情報が取得できなかった。公式ドキュメントを要確認。
+### Overview
+On-chain automated execution layer (keeper-style network).
+**Note:** Live documentation was not accessible during research. Verify current SDK details at their official docs before building.
 
-### 類似サービスとの比較（参考）
-Chainlink Keepers / Gelato Networkと同カテゴリ:
-- off-chainボットがオンチェーン条件を監視し条件充足時に実行
-- 典型ユースケース: 自動清算・DEXリバランス・スケジュール実行
+### Comparable Services (for context)
+Same category as Chainlink Keepers / Gelato Network:
+- Off-chain bots monitor on-chain conditions and execute transactions when triggered
+- Typical use cases: automated liquidations, DEX rebalancing, scheduled contract calls
 
-### $500フィードバックボーナス（ほぼ確実に取れる）
-KeeperHubを統合しさえすれば申請可能。構造化フィードバック:
-- UXの摩擦点
-- ドキュメントのギャップ
-- バグ（具体的な再現手順付き）
-- 欲しい機能
+### $500 Feedback Bounty (near-guaranteed)
+Any team that integrates KeeperHub can apply. Submit structured feedback covering:
+- UX friction points
+- Documentation gaps
+- Bugs with reproduction steps
+- Missing features
 
-### 勝ち筋（予想）
-AIエージェントのスケジューラとしてKeeperHubを使用:
-- エージェントが自然言語でオンチェーンタスクをスケジュール登録
-- KeeperHubが条件充足時に自動実行
-- 「payment rails」はクロスチェーンブリッジ + 決済統合を指す可能性大
-
----
-
-## トラック選択戦略（prizes.mdより）
-
-- **最大3トラック**まで申請可能
-- **0G + Gensyn**: マルチエージェントフレームワーク + P2P通信で相性◎
-- **Uniswap + ENS**: オンチェーンIDアイデンティティ + DeFi実行で相性◎
-- **KeeperHubフィードバックボーナス**: KeeperHubを少し使うだけで$250～$500ほぼ確実
-- Uniswapは`FEEDBACK.md`必須 → 時間を確保すること
-- Gensynは別ノードAXL通信必須 → インフラ設計を事前に計画すること
+### Win Strategy (inferred)
+Use KeeperHub as an AI agent scheduler:
+- Agent registers on-chain tasks via natural language
+- KeeperHub executes when conditions are met
+- "Bridges to payment rails" likely means cross-chain bridge + payment rail integration
 
 ---
 
-## おすすめの組み合わせ（24-48hハッカソン想定）
+## Track Selection Strategy (from prizes.md)
 
-### パターンA: フルスタックAIエージェント ($最大$27,500)
+- **Max 3 tracks** per submission
+- **0G + Gensyn**: strong pairing for multi-agent frameworks with P2P comms
+- **Uniswap + ENS**: strong pairing for on-chain identity + DeFi execution
+- **KeeperHub feedback bounty**: near-certain $250-500 just for integrating KeeperHub at all
+- Uniswap requires `FEEDBACK.md` — budget dedicated time to write it
+- Gensyn requires cross-node AXL comms — plan infra before the event
+
+---
+
+## Recommended Combinations (for a 24-48h hackathon)
+
+### Option A: Full-Stack AI Agent (up to $27,500)
 0G Track B + Uniswap + ENS:
-- ENS名付きiNFTエージェントが、Uniswapでポートフォリオを管理
-- 資産判断ロジックと実行履歴を0G KV Storeに保存
-- ENSテキストレコードでエージェント能力を公開
+- ENS-identified iNFT agent manages a portfolio via Uniswap
+- Decision logic and execution history stored in 0G KV Store
+- Agent capabilities published as ENS text records
 
-### パターンB: インフラフォーカス ($最大$17,500)
+### Option B: Infrastructure Focus (up to $17,500)
 0G Track A + Gensyn:
-- 0G上で動くエージェントフレームワーク
-- AXLでエージェント間P2P通信
-- iNFT対応メモリ管理レイヤー
+- Agent framework running on 0G
+- Inter-agent P2P communication via AXL
+- iNFT-compatible memory management layer
 
-### 最低限取りにいく賞
-- KeeperHubフィードバックボーナス ($250-500): 統合するだけ
-- Uniswap FEEDBACK.md ($500): ちゃんと書けばほぼ取れる
+### Low-Hanging Fruit (add to any submission)
+- KeeperHub feedback bounty ($250-500): integrate and submit structured feedback
+- Uniswap `FEEDBACK.md` ($500): document DX friction thoroughly
