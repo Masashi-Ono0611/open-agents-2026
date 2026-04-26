@@ -1,0 +1,19 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "Frontend (Next.js)",
+      "runtimeExecutable": "bunx",
+      "runtimeArgs": ["next", "dev"],
+      "cwd": "demo-dapp/frontend",
+      "port": 3000
+    },
+    {
+      "name": "Hardhat Node (local blockchain)",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["hardhat", "node"],
+      "cwd": "demo-dapp/contracts",
+      "port": 8545
+    }
+  ]
+}
