@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import { baseSepolia } from "wagmi/chains";
 import { parseUnits, isAddress } from "viem";
@@ -54,33 +54,28 @@ export default function SetupPage() {
   });
 
   const { writeContract: writeApprove, data: approveTx, isPending: approving } = useWriteContract();
-  const { isLoading: approveMining } = useWaitForTransactionReceipt({
-    hash: approveTx,
-    query: {
-      select: (r) => {
-        if (r.status === "success") {
-          toast.success("Approved");
-          setStep("commit");
-        }
-        return r;
-      },
-    },
-  });
+  const { isLoading: approveMining, isSuccess: approveSuccess } =
+    useWaitForTransactionReceipt({ hash: approveTx });
 
   const { writeContract: writeCommit, data: commitTx, isPending: committing } = useWriteContract();
-  const { isLoading: commitMining } = useWaitForTransactionReceipt({
-    hash: commitTx,
-    query: {
-      select: (r) => {
-        if (r.status === "success") {
-          toast.success("Will committed. Stay alive.");
-          setStep("done");
-          setTimeout(() => router.push("/dashboard"), 1500);
-        }
-        return r;
-      },
-    },
-  });
+  const { isLoading: commitMining, isSuccess: commitSuccess } =
+    useWaitForTransactionReceipt({ hash: commitTx });
+
+  useEffect(() => {
+    if (approveSuccess) {
+      toast.success("Approved");
+      setStep("commit");
+    }
+  }, [approveSuccess]);
+
+  useEffect(() => {
+    if (commitSuccess) {
+      toast.success("Will committed. Stay alive.");
+      setStep("done");
+      const t = window.setTimeout(() => router.push("/dashboard"), 1500);
+      return () => window.clearTimeout(t);
+    }
+  }, [commitSuccess, router]);
 
   const amountWei = (() => {
     try {

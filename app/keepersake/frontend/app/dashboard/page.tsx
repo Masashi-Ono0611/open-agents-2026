@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   useAccount,
   useReadContract,
@@ -39,18 +39,58 @@ export default function DashboardPage() {
   });
 
   const { writeContract, data: hbTx, isPending } = useWriteContract();
-  const { isLoading: mining } = useWaitForTransactionReceipt({
+  const { isLoading: mining, isSuccess: hbSuccess } = useWaitForTransactionReceipt({
     hash: hbTx,
-    query: {
-      select: (r) => {
-        if (r.status === "success") {
-          toast.success("You're alive ❤️");
-          refetch();
-        }
-        return r;
-      },
-    },
   });
+
+  // We snapshot the on-chain lastHeartbeat at the moment the user clicks the
+  // button, then poll until the chain returns a strictly newer value. Toast +
+  // countdown reset both happen on the same React render — no visible drift.
+  const snapshotHbRef = useRef<bigint | null>(null);
+  const [pendingHb, setPendingHb] = useState(false);
+
+  const willData = will as
+    | readonly [string, string, bigint, `0x${string}`, bigint, bigint, boolean]
+    | undefined;
+  const lastHeartbeatOnChain = willData?.[5];
+
+  const onHeartbeatClick = useCallback(() => {
+    if (lastHeartbeatOnChain !== undefined) {
+      snapshotHbRef.current = lastHeartbeatOnChain;
+    }
+    setPendingHb(true);
+    writeContract({
+      address: VAULT_ADDRESS,
+      abi: VAULT_ABI,
+      functionName: "heartbeat",
+      chainId: baseSepolia.id,
+    });
+  }, [lastHeartbeatOnChain, writeContract]);
+
+  // After tx is mined, poll the chain every 500ms until lastHeartbeat advances
+  // (don't wait for the default 5s refetch interval).
+  useEffect(() => {
+    if (!pendingHb || !hbSuccess) return;
+    refetch();
+    const interval = setInterval(() => refetch(), 500);
+    return () => clearInterval(interval);
+  }, [hbSuccess, pendingHb, refetch]);
+
+  // Observe lastHeartbeatOnChain. The instant it advances past the snapshot,
+  // the countdown will reset on this render — fire the toast at the same time.
+  useEffect(() => {
+    if (
+      !pendingHb ||
+      lastHeartbeatOnChain === undefined ||
+      snapshotHbRef.current === null
+    )
+      return;
+    if (lastHeartbeatOnChain > snapshotHbRef.current) {
+      toast.success("You're alive ❤️");
+      snapshotHbRef.current = lastHeartbeatOnChain;
+      setPendingHb(false);
+    }
+  }, [lastHeartbeatOnChain, pendingHb]);
 
   if (!isConnected) {
     return (
@@ -63,10 +103,8 @@ export default function DashboardPage() {
     );
   }
 
-  const w = will as
-    | readonly [string, string, bigint, `0x${string}`, bigint, bigint, boolean]
-    | undefined;
-  const hasWill = w && w[0] !== "0x0000000000000000000000000000000000000000";
+  const hasWill =
+    willData && willData[0] !== "0x0000000000000000000000000000000000000000";
 
   if (!hasWill) {
     return (
@@ -88,7 +126,8 @@ export default function DashboardPage() {
     );
   }
 
-  const [heir, , amount, willNoteHash, timeout, lastHeartbeat, delivered] = w!;
+  const [heir, , amount, willNoteHash, timeout, lastHeartbeat, delivered] =
+    willData!;
   const elapsed = now - Number(lastHeartbeat);
   const remaining = Number(timeout) - elapsed;
   const expired = remaining <= 0;
@@ -138,18 +177,15 @@ export default function DashboardPage() {
           </div>
 
           <button
-            disabled={delivered || isPending || mining}
-            onClick={() =>
-              writeContract({
-                address: VAULT_ADDRESS,
-                abi: VAULT_ABI,
-                functionName: "heartbeat",
-                chainId: baseSepolia.id,
-              })
-            }
+            disabled={delivered || isPending || mining || pendingHb}
+            onClick={onHeartbeatClick}
             className="w-full bg-white text-black hover:bg-zinc-200 disabled:opacity-40 disabled:cursor-not-allowed font-medium py-4 rounded-xl text-lg"
           >
-            {isPending || mining ? "Beating…" : delivered ? "Cannot heartbeat" : "❤️ I'm alive"}
+            {isPending || mining || pendingHb
+              ? "Beating…"
+              : delivered
+              ? "Cannot heartbeat"
+              : "❤️ I'm alive"}
           </button>
         </div>
 
