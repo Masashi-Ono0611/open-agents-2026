@@ -44,17 +44,39 @@ After `ai_generate_workflow` produced a workflow, I wanted to see *which* fields
 
 When I commit a will and the KeeperHub workflow tries to call `execute()` later, I want to know *now* whether the wallet has enough Base Sepolia ETH for the gas budget. If the wallet runs dry, the workflow silently retries forever. A pre-execution dry-run that estimates gas + checks the wallet balance, exposed as `validate_workflow_runnable`, would catch this.
 
+### F6 — Contract address is duplicated between frontend and workflow
+
+A KeeperSake-style integration has the deployed vault address in **at least three places**: the frontend (`lib/contracts.ts`), the KeeperHub workflow's read/write nodes, and any seed scripts. Redeploying the contract (which I did once during this build, after renaming `SayonaraVault` → `KeeperSakeVault`) silently breaks the workflow because nothing tells it the address moved — the polls just return `false` forever against a dead contract.
+
+**Repro**: deploy v1 of a contract, wire a workflow that calls one of its functions, redeploy at a new address, update the frontend, leave the workflow alone. Workflow keeps running with no errors and never fires the action.
+
+**Suggested fix**: an **address book** primitive (per-org, per-network) — workflows reference `{{addressBook.KEEPERSAKE_VAULT}}` instead of a literal address. Updating the address book entry instantly re-targets every workflow that used it. Bonus: a CLI `kh address-book set --network base-sepolia KEEPERSAKE_VAULT 0x…` so a `bun run deploy:baseSepolia` script can pipe its output straight in.
+
+### F7 — No "fire once" / dry-run for a deployed workflow
+
+After generating a workflow with `ai_generate_workflow`, the only way I have to verify it works is wait for the next scheduled tick. For a 60-second schedule that's tolerable; for the 1-day production schedule it's a 24-hour feedback loop. The MCP exposes `execute_workflow` (manual trigger), but I couldn't tell from the docs whether that bypasses the trigger condition entirely or just simulates it — the difference matters when the action is `web3/write-contract`.
+
+**Suggested fix**: `dry_run_workflow(workflow_id, simulate_inputs)` MCP tool that runs every step against a fork RPC (Tenderly-style) and returns the per-step outputs without sending a real tx. Pair it with a "Test fire" button in the workflow builder that surfaces simulated logs.
+
+### F8 — No reference frontend for "is my workflow live?"
+
+I built `/dashboard` to show "your KeeperSake is being watched" but I had no API surface to prove it from the frontend. I ended up displaying just the on-chain countdown — which makes KeeperHub *invisible* to the end user. They can't tell whether the auto-execution is actually wired up or whether they need to call `execute()` themselves.
+
+**Suggested fix**: a **public read-only REST endpoint per workflow** (`GET https://app.keeperhub.com/api/workflows/<id>/status`) returning `{ enabled, lastFiredAt, nextScheduledAt, totalRuns }`. Optional CORS allowlist per workflow so my Vercel app can fetch it directly. This is what I'd put a "🟢 KeeperHub: watching, next check in 47s" badge on the dashboard — turning KeeperHub from infrastructure into a visible reliability signal for the user.
+
 ## Documentation gaps I hit
 
 - **No quickstart for "KeeperHub from a Next.js app"**: the docs cover MCP and CLI but not "how do I read whether a workflow has run from my frontend". I ended up just polling on-chain `KeeperSakeDelivered` events instead, which is fine but means KeeperHub is invisible from the user's view.
 - **Schedule + per-row execution pattern**: the canonical pattern of "schedule fires → for-each over a list of addresses → branch per item" is exactly what production keepers do. A template for it would have saved 30 minutes.
 - **What does `validate_plugin_config` do *before* committing?** I called it once and got back what looked like a no-op success even when the config was clearly wrong. Needs a worked example.
+- **No "production frontend integration" recipe**: how to wire wagmi/RainbowKit + a KeeperHub-driven contract together without leaving the user wondering whether the keeper is actually running. Even a 200-line Next.js example repo would close the loop. (Related to F8.)
 
 ## Feature requests, ranked
 
 1. **`watch_event` trigger** — instead of polling `isExpired`, let the workflow trigger on the contract's `Heartbeat` event firing too long ago. This would halve gas usage across the network and is the natural fit for "react to on-chain state".
 2. **Conditional re-arm** — let a workflow disable itself after success (so `execute()` never gets retried after the KeeperSake has been delivered). Currently I set `delivered=true` in the contract and rely on `isExpired` returning false; an in-workflow `disable_self` action would be cleaner.
 3. **Per-user workflow templating** — at signup time I'd love to call something like `instantiate_template(template_id, vars={user: 0xabc})` and get a fresh workflow for that user, all from the frontend. Currently I have one workflow watching a list, which has to know the list ahead of time.
+4. **Address book** (F6) and **workflow status REST endpoint** (F8) — both unblock real frontend integration patterns; without them KeeperHub stays a backend-only tool.
 
 ## Score (subjective)
 
@@ -64,6 +86,8 @@ When I commit a will and the KeeperHub workflow tries to call `execute()` later,
 | MCP tool completeness | 8/10 — `ai_generate_workflow` is excellent; tuple-return docs missing |
 | Error surface | 5/10 — see F2 |
 | Documentation depth | 6/10 — quickstarts cover the basics but not real patterns |
+| Frontend integration story | 4/10 — see F6 / F8; hard to make the keeper visible to end users |
+| Survives a contract redeploy | 3/10 — see F6; address coupling is a silent footgun |
 | "Would I use this in production" | 8/10 — yes, with the gas-budget pre-check from F5 |
 
 Thanks for sponsoring. Looking forward to MPP shipping.
