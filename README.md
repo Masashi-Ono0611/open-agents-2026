@@ -2,63 +2,113 @@
 
 Built for [ETHGlobal Open Agents](https://ethglobal.com/events/openagents) (April 24 – May 6, 2026) — **KeeperHub track**.
 
-## KeeperSake 🍶
+## 🎴 Omikuji Hub
 
-> An on-chain keepsake, kept by a Keeper.
+> An onchain shrine where the priest is a KeeperHub agentic wallet.
+> Every pull pays — even the bad fortunes.
 
-A triple pun: a *keepsake* (形見) you leave, *for the sake of* an heir, kept by a *Keeper* (the KeeperHub workflow watching your heartbeat).
+A single Claude Code Skill that turns one English prompt into
 
-Commit USDC + final words to an heir, set a timeout, tap **"I'm alive"** as long as you are. The day you stop, a KeeperHub workflow calls `execute()` on your behalf and your heir inherits — automatically, on-chain, no lawyer. The contract is permissionless; KeeperHub is the polite default.
+1. a deterministic-randomness Japanese fortune draw (大吉 → 大凶), and
+2. a real on-chain USDC reward whose amount tiers with the fortune's rarity,
 
-→ Project lives in [`app/keepersake/`](./app/keepersake/). See:
+both running end-to-end against the live KeeperHub agentic wallet on Base Sepolia. No frontend, no backend — the agent itself is the product.
 
-- [`app/keepersake/README.md`](./app/keepersake/README.md) — full setup
-- [`app/keepersake/docs/keeperhub-workflow.md`](./app/keepersake/docs/keeperhub-workflow.md) — the natural-language prompt that generates the watcher via `ai_generate_workflow`
-- [`app/keepersake/FEEDBACK.md`](./app/keepersake/FEEDBACK.md) — Builder Feedback Bounty submission
+→ Skill spec: [`.claude/skills/omikuji-hub/SKILL.md`](./.claude/skills/omikuji-hub/SKILL.md)
+→ Verified live runs: [`.claude/skills/omikuji-hub/examples/01-pull-fortune.md`](./.claude/skills/omikuji-hub/examples/01-pull-fortune.md)
+→ Submission writeup: [`SUBMISSION.md`](./SUBMISSION.md)
+→ Builder feedback (bounty): [`FEEDBACK.md`](./FEEDBACK.md)
 
-## Deployment (Base Sepolia)
+## How it works
 
-| Contract | Address |
-|---|---|
-| `KeeperSakeVault` | [`0x3A22bD29499702bEbc4225BfcDEAaE5DD8ae8743`](https://sepolia.basescan.org/address/0x3A22bD29499702bEbc4225BfcDEAaE5DD8ae8743) |
-| USDC (Circle) | [`0x036CbD53842c5426634e7929541eC2318f3dCF7e`](https://sepolia.basescan.org/address/0x036CbD53842c5426634e7929541eC2318f3dCF7e) |
+```
+user: "Pull today's omikuji for 0xC94d…6169"
 
-Faucets: [ETH](https://www.coinbase.com/faucets/base-ethereum-sepolia-faucet) · [USDC](https://faucet.circle.com/) (pick Base Sepolia)
-
-## Getting Started
-
-```bash
-cd app/keepersake/contracts
-bun install && bun run test       # 8 tests pass
-# bun run deploy:baseSepolia      # only if you want to redeploy
-
-cd ../frontend
-bun install
-cp .env.example .env.local        # set NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID
-bun run dev                       # http://localhost:3000
+  Phase 1 — divine the fortune (free, deterministic)
+  ┌──────────────────────────────────────────────────┐
+  │ blockHash + askerAddress + utcDate               │
+  │   → keccak256(...) → first byte ∈ [0,255]        │
+  │   → tier = Daikichi | Kichi | Suekichi | Kyō     │
+  │           | Daikyō                               │
+  └──────────────────────────────────────────────────┘
+                          │
+  Phase 2 — settle the reward on-chain (always)
+  ┌──────────────────────────────────────────────────┐
+  │ mcp__keeperhub__execute_transfer({               │
+  │   network: "84532",          // Base Sepolia     │
+  │   recipient_address: <asker>,                    │
+  │   amount: <tier reward>,                         │
+  │   token_address: USDC,                           │
+  │ })                                               │
+  │ → KeeperHub agentic wallet 0x8F31…81FD signs     │
+  │ → real Base Sepolia tx ~9s later                 │
+  │ → BaseScan link returned to the user             │
+  └──────────────────────────────────────────────────┘
 ```
 
-## Claude Code skills (the agent-runtime side)
+| Tier | Probability | Reward |
+|---|---|---|
+| 大吉 Daikichi (great blessing) | ≈10% | **0.005 USDC** (jackpot) |
+| 吉 Kichi (blessing) | ≈30% | **0.001 USDC** |
+| 末吉 Suekichi (small blessing) | ≈40% | **0.0003 USDC** |
+| 凶 Kyō (curse, but not the worst) | ≈15% | **0.0001 USDC** (consolation) |
+| 大凶 Daikyō (great curse) | ≈5% | **0.00005 USDC** ("even bad luck pays") |
 
-Two `.claude/skills/` shipped with this submission. Both call the **KeeperHub MCP server** directly — no frontend, no backend, just an English prompt → onchain action.
+## On-chain evidence (Base Sepolia)
 
-### 🍶 [`keeperhub-pilot`](./.claude/skills/keeperhub-pilot/SKILL.md)
-> One prompt → one workflow → one tx.
+| Asker (last 4) | Tier | Amount | Transaction |
+|---|---|---|---|
+| `…dCB8` | Daikichi 大吉 | 0.005 USDC | [`0xf31a…019d`](https://sepolia.basescan.org/tx/0xf31a2380f7b35202231ba1e94e97d97f7d93c203b56d05eac8a6d9cd647d019d) |
+| `…6169` | Suekichi 末吉 | 0.0003 USDC | [`0x8f77…74d4`](https://sepolia.basescan.org/tx/0x8f77902da8c210aa99fc79fdc6a531c7aee21cfbe44f42a624ed4798b5d174d4) |
+| `…6169` | Daikyō 大凶 | 0.00005 USDC | [`0xddad…6261`](https://sepolia.basescan.org/tx/0xddad5478033d08ffeccb53cfcd42644d6ce5155e37bacda3751f29ea63b56261) |
 
-Encodes the gotchas the KeeperSake build surfaced (network must be a chain-id string, tokenConfig must be a JSON string, integrationId is required, template syntax is `{{@id:Label.data.field}}`) so any developer or agent can invoke "send 0.5 USDC to alice" and get a tx hash back without re-discovering them. See [`examples/`](./.claude/skills/keeperhub-pilot/examples) for verified runs.
+KeeperHub agentic wallet: [`0x8F31fF5eaae3A1036839c503248e9f42479C81FD`](https://sepolia.basescan.org/address/0x8F31fF5eaae3A1036839c503248e9f42479C81FD)
+USDC (Circle): [`0x036CbD53842c5426634e7929541eC2318f3dCF7e`](https://sepolia.basescan.org/address/0x036CbD53842c5426634e7929541eC2318f3dCF7e)
 
-### 🎴 [`omikuji-hub`](./.claude/skills/omikuji-hub/SKILL.md)
-> An onchain shrine where the priest is a KeeperHub agentic wallet. Every pull pays — even the bad fortunes.
+## Run it yourself
 
-Pulls a Japanese-style fortune (Daikichi → Daikyō) deterministically from `keccak256(blockHash + askerAddress + utcDate)` and **always** drops a real USDC reward whose amount escalates with rarity (0.005 → 0.00005). Demonstrates the full "AI decides → KeeperHub executes" pattern in a self-contained, judge-friendly skill. Verified runs in [`examples/01-pull-fortune.md`](./.claude/skills/omikuji-hub/examples/01-pull-fortune.md).
+The skill ships ready-to-use. You need Claude Code with the KeeperHub MCP server attached.
 
-To use either skill yourself:
 ```bash
+# 1. attach KeeperHub
 claude mcp add --transport http keeperhub https://app.keeperhub.com/mcp
-# complete browser OAuth, then ask Claude to invoke the skill
+# (browser OAuth opens; sign in to your KeeperHub org)
+
+# 2. inside this repo, ask Claude
+#    "Pull today's omikuji for 0xYourWallet"
+#
+# Claude routes to .claude/skills/omikuji-hub/SKILL.md and runs the
+# two-phase flow — Phase 1 is a free RPC + keccak, Phase 2 sends a
+# real Base Sepolia USDC transfer via the agentic wallet.
 ```
 
-## Docs
+Phase 1 alone (the fortune draw) needs no KeeperHub key — see [`examples/01-pull-fortune.md`](./.claude/skills/omikuji-hub/examples/01-pull-fortune.md) for a 20-line `bun -e` reproducer.
 
-- Hackathon: [overview](docs/hackathon/overview.md) · [prize details](docs/hackathon/prizes.md) · [schedule](docs/hackathon/schedule.md)
-- Research: [AI agent trends](docs/research/ai-agent-trends.md) · [frameworks](docs/research/frameworks.md) · [on-chain agents](docs/research/onchain-agents.md)
+## Why this is creative — the pitch
+
+1. **Conditional execute, scaled to *every* path.** Most demo skills only call onchain on the happy path. This one calls onchain on **every** path; the *amount* is the discriminator instead of a boolean. Judges always see a real tx.
+2. **Strip the omikuji theme and you have generic infra.** "AI agent decides which tier a human qualifies for, then pays the corresponding amount via KeeperHub" is the shape behind quiz prizes, retention drops, onboarding bonuses, and tiered referral payouts. The skill is a working primitive disguised as a folk-game.
+3. **Two-tool composition with a real KeeperHub MCP server.** Not a pre-recorded mock. Each pull genuinely calls `mcp__keeperhub__execute_transfer` and `mcp__keeperhub__get_direct_execution_status`. The transactions in this README are independently verifiable on-chain.
+4. **Cultural framing as a discovery angle.** "おみくじ" makes the skill discoverable to a Japanese-speaking user; the JSON output and BaseScan tx are universal.
+
+## Sister skill
+
+[`keeperhub-pilot`](./.claude/skills/keeperhub-pilot/SKILL.md) — generic "one English prompt → one KeeperHub workflow → one tx" wrapper, used as the foundation that `omikuji-hub` calls into. Captures the gotchas (`network` must be a chain-id string, `tokenConfig` must be a JSON string, template syntax `{{@id:Label.data.field}}`) so future skills don't re-discover them.
+
+## Repo layout
+
+```
+.claude/skills/omikuji-hub/      ← the submission
+.claude/skills/keeperhub-pilot/  ← sister skill (generic wrapper)
+SUBMISSION.md                    ← ETHGlobal submission writeup
+FEEDBACK.md                      ← Builder Feedback Bounty
+app/keepersake/                  ← earlier KeeperSake explorations; the
+                                   integration learnings from this codebase
+                                   are what FEEDBACK.md distills
+docs/hackathon/                  ← prize details, schedule, overview
+```
+
+## Prize targets
+
+- **KeeperHub Track 1 — Best Use of KeeperHub** ($4,500)
+- **KeeperHub Builder Feedback Bounty** ($250) — see [`FEEDBACK.md`](./FEEDBACK.md)
