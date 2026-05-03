@@ -93,7 +93,7 @@ Phase 1 alone (the fortune draw) needs no KeeperHub key — see [`examples/01-pu
 
 ## Sister skill
 
-[`keeperhub-pilot`](./.claude/skills/keeperhub-pilot/SKILL.md) — generic "one English prompt → one KeeperHub workflow → one tx" wrapper, used as the foundation that `omikuji-hub` calls into. Captures the gotchas (`network` must be a chain-id string, `tokenConfig` must be a JSON string, template syntax `{{@id:Label.data.field}}`) so future skills don't re-discover them.
+[`keeperhub-pilot`](./.claude/skills/keeperhub-pilot/SKILL.md) — independent companion Skill in this repo. A generic "one English prompt → one KeeperHub workflow → one tx" wrapper that captures the gotchas surfaced during the earlier build (`network` must be a chain-id string, `tokenConfig` must be a JSON string, template syntax `{{@id:Label.data.field}}`) so future Skills don't re-discover them. `omikuji-hub` does **not** depend on it — Omikuji Hub calls the KeeperHub MCP tools directly — but the two ship together as a small "agent-runtime patterns for KeeperHub" library.
 
 ## Repo layout
 
