@@ -85,7 +85,11 @@ export default function SetupPage() {
     }
   })();
 
-  const heirValid = isAddress(heir) && heir.toLowerCase() !== address?.toLowerCase();
+  const heirIsSelf =
+    isAddress(heir) && heir.toLowerCase() === address?.toLowerCase();
+  const heirIsVault =
+    isAddress(heir) && heir.toLowerCase() === VAULT_ADDRESS.toLowerCase();
+  const heirValid = isAddress(heir) && !heirIsSelf && !heirIsVault;
   const amountValid = amountWei > 0n && (balance === undefined || amountWei <= (balance as bigint));
   const noteValid = note.trim().length > 0;
   const formValid = heirValid && amountValid && noteValid;
@@ -155,6 +159,8 @@ export default function SetupPage() {
               <p className="text-xs text-red-400 mt-1.5">
                 {!isAddress(heir)
                   ? "Not a valid address"
+                  : heirIsVault
+                  ? "Heir cannot be the vault contract — funds would be locked forever"
                   : "Heir cannot be yourself"}
               </p>
             )}

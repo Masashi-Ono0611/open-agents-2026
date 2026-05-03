@@ -11,6 +11,7 @@ import { baseSepolia } from "wagmi/chains";
 import toast from "react-hot-toast";
 import Link from "next/link";
 import { Header } from "@/components/Header";
+import { KeeperHubStatus } from "@/components/KeeperHubStatus";
 import {
   VAULT_ABI,
   VAULT_ADDRESS,
@@ -189,6 +190,8 @@ export default function DashboardPage() {
           </button>
         </div>
 
+        <KeeperHubStatus />
+
         <dl className="border border-zinc-900 rounded-xl bg-zinc-950 divide-y divide-zinc-900 text-sm">
           <Row label="Heir">
             <Link
@@ -226,10 +229,11 @@ export default function DashboardPage() {
         </dl>
 
         <p className="mt-6 text-xs text-zinc-500 text-center">
-          A KeeperHub workflow polls{" "}
-          <code className="text-zinc-300">silenceOf({shortAddr(address)})</code>{" "}
-          on a schedule. When it exceeds your timeout, it calls{" "}
-          <code className="text-zinc-300">execute()</code> on your behalf.
+          Watching{" "}
+          <code className="text-zinc-400">
+            silenceOf({shortAddr(address)})
+          </code>
+          .
         </p>
       </main>
     </>
