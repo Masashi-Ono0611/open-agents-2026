@@ -1,15 +1,17 @@
-# Sayonara Switch ⚰️
+# KeeperSake 🍶
 
-> **The dead man's switch for the post-AI economy.**
+> **An on-chain keepsake, kept by a Keeper.**
 > Built for [ETHGlobal Open Agents](https://ethglobal.com/events/openagents) — KeeperHub track.
 
-Commit your USDC to an heir. Tap **"I'm alive"** to reset the timer. If you go silent past your timeout, a [KeeperHub](https://keeperhub.com/) workflow runs `execute()` for you and your heir inherits — automatically, on-chain, no lawyer.
+Your USDC, your final words, your heir. Commit them once and tap **"I'm alive"** as long as you are. The day you go silent past your timeout, a [KeeperHub](https://keeperhub.com/) workflow runs `execute()` on your behalf and your heir inherits — automatically, on-chain, no lawyer.
+
+The name is a triple pun: a *keepsake* (形見) that you leave, *for the sake of* an heir, kept by a *Keeper* (the KeeperHub workflow watching your heartbeat).
 
 ## Why this exists
 
 AI agents are starting to run real money. People are hooking up auto-trading agents, treasury managers, and on-chain workers. Nobody is asking the obvious follow-up: **what happens to your on-chain assets when *you* go silent?**
 
-Sayonara Switch is the simplest possible answer. A single contract, a single button, an AI-generated KeeperHub workflow that watches your heartbeat and presses the trigger when the time comes.
+KeeperSake is the simplest possible answer. A single contract, a single button, an AI-generated KeeperHub workflow that watches your heartbeat and presses the trigger when the time comes.
 
 ## Architecture
 
@@ -18,11 +20,11 @@ Next.js 15 (Vercel)
   ├ /              — Landing
   ├ /setup         — Will commit wizard (heir / amount / note / timeout)
   ├ /dashboard     — Countdown + "I'm alive" button
-  ├ /heir/[addr]   — Heir's view: pending vs inherited, with hash-verified note
+  ├ /heir/[addr]   — Heir's view: pending vs delivered, with hash-verified note
   └ /demo          — 60-second judge walkthrough
                 ▼ wagmi / viem
 Base Sepolia
-  └ SayonaraVault.sol           ← stores wills + lastHeartbeat (read by KeeperHub)
+  └ KeeperSakeVault.sol         ← stores wills + lastHeartbeat (read by KeeperHub)
   USDC (Circle official)        ← 0x036CbD53842c5426634e7929541eC2318f3dCF7e
                 ▲
                 │ web3/read-contract → condition → web3/write-contract
@@ -78,7 +80,7 @@ automatically.
 1. Connect a wallet on Base Sepolia (top up ETH via [Coinbase faucet](https://www.coinbase.com/faucets/base-ethereum-sepolia-faucet); USDC via [Circle faucet](https://faucet.circle.com/))
 2. `/setup` → fill heir, amount `1` USDC, note, timeout **60s** → Approve → Commit
 3. `/dashboard` → watch the countdown. **Don't click "I'm alive."**
-4. At 0s the KeeperHub workflow fires within ~60s → `Sayonara` event emitted
+4. At 0s the KeeperHub workflow fires within ~60s → `KeeperSakeDelivered` event emitted
 5. `/heir/<your-address>` → final words readable, hash verified
 
 ## Testnet resources

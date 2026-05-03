@@ -43,15 +43,14 @@ export default function HeirPage({
         <main className="max-w-xl mx-auto px-6 py-20 text-center">
           <h1 className="text-3xl font-semibold mb-3">No will found.</h1>
           <p className="text-zinc-400">
-            <code>{shortAddr(userAddr)}</code> hasn&apos;t set up a Sayonara
-            Switch.
+            <code>{shortAddr(userAddr)}</code> hasn&apos;t set up a KeeperSake.
           </p>
         </main>
       </>
     );
   }
 
-  const [heir, , amount, willNoteHash, , , executed] = w!;
+  const [heir, , amount, willNoteHash, , , delivered] = w!;
   const note = !isZeroHash(willNoteHash) ? loadWillNote(willNoteHash) : null;
   const noteHashMatches =
     note !== null && hashWillNote(note) === willNoteHash;
@@ -64,18 +63,18 @@ export default function HeirPage({
           From {shortAddr(userAddr)} → To {shortAddr(heir)}
         </p>
 
-        {executed ? (
+        {delivered ? (
           <>
             <h1 className="text-4xl font-semibold mb-4">
-              💌 You inherited{" "}
+              💌 A KeeperSake for you —{" "}
               <span className="font-mono">
                 {Number(amount) / 10 ** TOKEN_DECIMALS} {TOKEN_SYMBOL}
               </span>
               .
             </h1>
             <p className="text-zinc-400 mb-10 leading-relaxed">
-              The Sayonara Switch fired. Your inheritance has already been
-              transferred to your wallet.
+              KeeperHub delivered it on the sender&apos;s behalf. Your
+              inheritance has already landed in your wallet.
             </p>
           </>
         ) : (
@@ -90,7 +89,7 @@ export default function HeirPage({
               {shortAddr(userAddr)} is still alive. Their final words are sealed
               behind the keccak hash{" "}
               <code className="text-xs">{willNoteHash}</code>. They become
-              readable when the switch fires.
+              readable when the KeeperSake is delivered.
             </p>
           </>
         )}
@@ -99,7 +98,7 @@ export default function HeirPage({
           <div className="text-xs uppercase tracking-widest text-zinc-500 mb-3">
             Final words
           </div>
-          {!executed ? (
+          {!delivered ? (
             <p className="italic text-zinc-600">…sealed.</p>
           ) : note ? (
             <>
@@ -131,7 +130,7 @@ export default function HeirPage({
             href="/"
             className="text-sm text-zinc-500 hover:text-zinc-300"
           >
-            ← Sayonara Switch
+            ← KeeperSake
           </Link>
         </div>
       </main>

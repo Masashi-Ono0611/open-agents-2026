@@ -4,13 +4,14 @@ pragma solidity ^0.8.20;
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-/// @title SayonaraVault — the dead man's switch for the post-AI economy
+/// @title KeeperSakeVault — an on-chain keepsake, kept by a Keeper
 /// @notice Users commit ERC20 to their heir. They must heartbeat() periodically.
 ///         If they go silent past `timeout`, anyone (typically a KeeperHub workflow)
-///         can call execute(user) to transfer the assets to the heir.
+///         can call execute(user) to deliver the assets — and the will note —
+///         to the heir.
 /// @dev    Funds stay in the user's wallet via ERC20 allowance — the vault only
-///         pulls them at execution time. Users can revoke at any time before death.
-contract SayonaraVault {
+///         pulls them at delivery time. Users can revoke at any time.
+contract KeeperSakeVault {
     using SafeERC20 for IERC20;
 
     struct Will {
@@ -18,9 +19,9 @@ contract SayonaraVault {
         IERC20 token;
         uint256 amount;
         bytes32 willNoteHash; // IPFS CID hash of the user's final words
-        uint64 timeout;       // seconds of silence before execution is allowed
+        uint64 timeout;       // seconds of silence before delivery is allowed
         uint64 lastHeartbeat; // unix seconds of the last heartbeat
-        bool executed;
+        bool delivered;
     }
 
     mapping(address => Will) public wills;
@@ -34,7 +35,8 @@ contract SayonaraVault {
         uint64 timeout
     );
     event Heartbeat(address indexed user, uint64 timestamp);
-    event Sayonara(
+    /// @notice Fired when a will has been delivered to its heir.
+    event KeeperSakeDelivered(
         address indexed user,
         address indexed heir,
         address indexed token,
@@ -44,7 +46,7 @@ contract SayonaraVault {
     event WillRevoked(address indexed user);
 
     error NoWill();
-    error AlreadyExecuted();
+    error AlreadyDelivered();
     error StillAlive(uint64 secondsRemaining);
     error ZeroHeir();
     error ZeroAmount();
@@ -72,7 +74,7 @@ contract SayonaraVault {
             willNoteHash: willNoteHash,
             timeout: timeout,
             lastHeartbeat: uint64(block.timestamp),
-            executed: false
+            delivered: false
         });
 
         emit WillCommitted(msg.sender, heir, address(token), amount, willNoteHash, timeout);
@@ -83,7 +85,7 @@ contract SayonaraVault {
     function heartbeat() external {
         Will storage w = wills[msg.sender];
         if (w.heir == address(0)) revert NoWill();
-        if (w.executed) revert AlreadyExecuted();
+        if (w.delivered) revert AlreadyDelivered();
         w.lastHeartbeat = uint64(block.timestamp);
         emit Heartbeat(msg.sender, uint64(block.timestamp));
     }
@@ -92,7 +94,7 @@ contract SayonaraVault {
     function revoke() external {
         Will storage w = wills[msg.sender];
         if (w.heir == address(0)) revert NoWill();
-        if (w.executed) revert AlreadyExecuted();
+        if (w.delivered) revert AlreadyDelivered();
         delete wills[msg.sender];
         emit WillRevoked(msg.sender);
     }
@@ -102,15 +104,15 @@ contract SayonaraVault {
     function execute(address user) external {
         Will storage w = wills[user];
         if (w.heir == address(0)) revert NoWill();
-        if (w.executed) revert AlreadyExecuted();
+        if (w.delivered) revert AlreadyDelivered();
 
         uint256 elapsed = block.timestamp - w.lastHeartbeat;
         if (elapsed < w.timeout) revert StillAlive(w.timeout - uint64(elapsed));
 
-        w.executed = true;
+        w.delivered = true;
         w.token.safeTransferFrom(user, w.heir, w.amount);
 
-        emit Sayonara(user, w.heir, address(w.token), w.amount, w.willNoteHash);
+        emit KeeperSakeDelivered(user, w.heir, address(w.token), w.amount, w.willNoteHash);
     }
 
     // ─── views (KeeperHub reads these) ──────────────────────────────────────
@@ -125,7 +127,7 @@ contract SayonaraVault {
     /// @notice True iff `execute(user)` would succeed right now.
     function isExpired(address user) external view returns (bool) {
         Will storage w = wills[user];
-        if (w.heir == address(0) || w.executed) return false;
+        if (w.heir == address(0) || w.delivered) return false;
         return (block.timestamp - w.lastHeartbeat) >= w.timeout;
     }
 }

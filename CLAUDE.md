@@ -8,15 +8,16 @@ ETHGlobal Open Agents hackathon project (April 24 – May 6, 2026).
 - Prize details: docs/ethglobal-openagents-prizes.md
 - Event overview: docs/ethglobal-openagents-overview.md
 
-## Concept: Sayonara Switch ⚰️
+## Concept: KeeperSake 🍶
 
-> The dead man's switch for the post-AI economy.
+> An on-chain keepsake, kept by a Keeper.
 
-User commits cbBTC to an heir + writes final words + sets a timeout. They must `heartbeat()`
+User commits USDC to an heir + writes final words + sets a timeout. They must `heartbeat()`
 periodically. If silence exceeds the timeout, a KeeperHub workflow calls `execute(user)` and
-the cbBTC moves to the heir. Permissionless contract; KeeperHub is the polite default.
+the USDC moves to the heir along with their final words. Permissionless contract; KeeperHub
+is the polite default.
 
-Lives in `app/sayonara-switch/`.
+Lives in `app/keepersake/`.
 
 Prize target: **KeeperHub Track 1 — Best Use of KeeperHub** ($4,500) + Builder Feedback
 Bounty ($250).
@@ -24,8 +25,8 @@ Bounty ($250).
 ## Stack
 
 - **Frontend**: Next.js 15 (App Router) + TypeScript + Tailwind + RainbowKit + wagmi/viem (Bun)
-- **Contract**: Solidity 0.8.20, Hardhat, OpenZeppelin ERC20 helpers
-- **Chain**: Base Sepolia (chainId 84532); cbBTC via `MockCbBTC` faucet
+- **Contract**: Solidity 0.8.20, Hardhat, OpenZeppelin ERC20 helpers (`KeeperSakeVault.sol`)
+- **Chain**: Base Sepolia (chainId 84532); USDC = Circle official `0x036CbD53842c5426634e7929541eC2318f3dCF7e` (6 decimals); `MockUSDC.sol` for local Hardhat tests only
 - **Automation**: KeeperHub MCP (`https://app.keeperhub.com/mcp`), workflow generated via `ai_generate_workflow`
 - **Storage**: will note as keccak hash on-chain; full text via `localStorage` in demo (IPFS in prod)
 
@@ -33,13 +34,13 @@ Bounty ($250).
 
 ```bash
 # Contracts
-cd app/sayonara-switch/contracts
+cd app/keepersake/contracts
 bun install
 bun run test                  # 8 tests
 bun run deploy:baseSepolia    # paste output addrs into frontend/lib/contracts.ts
 
 # Frontend
-cd app/sayonara-switch/frontend
+cd app/keepersake/frontend
 bun install
 bun run dev                   # http://localhost:3000
 ```

@@ -1,6 +1,6 @@
 # KeeperHub workflow setup
 
-This is the workflow that polls each will's `isExpired(user)` and, when true, calls `execute(user)`.
+This is the workflow that polls each will's `isExpired(user)` and, when true, calls `execute(user)` to deliver the KeeperSake to the heir.
 
 ## Option A — generate it from natural language (recommended for the demo)
 
@@ -19,7 +19,7 @@ This is the workflow that polls each will's `isExpired(user)` and, when true, ca
 
    1. Triggers every 1 minute (schedule trigger).
    2. For each user address in the variable USERS_TO_WATCH (a comma-
-      separated list), reads `isExpired(address)` from the SayonaraVault
+      separated list), reads `isExpired(address)` from the KeeperSakeVault
       contract at <VAULT_ADDRESS>.
    3. If isExpired returns true, calls `execute(address)` on the same
       contract using my agentic wallet.
@@ -32,10 +32,10 @@ This is the workflow that polls each will's `isExpired(user)` and, when true, ca
      function execute(address user) external
      function wills(address user) external view returns (
        address heir, address token, uint256 amount, bytes32 willNoteHash,
-       uint64 timeout, uint64 lastHeartbeat, bool executed
+       uint64 timeout, uint64 lastHeartbeat, bool delivered
      )
 
-   Name the workflow "Sayonara Watcher".
+   Name the workflow "KeeperSake Watcher".
    ```
 
 3. Claude will call `ai_generate_workflow`, return a workflow ID, and the workflow goes live immediately.
@@ -52,11 +52,11 @@ If you'd rather click through the workflow builder:
 | 4 | Condition | branch on `{{@3.result}} == true` |
 | 5 | web3/write-contract | (true branch) function=`execute`, args=[`{{@2:item}}`], walletId=`<your KeeperHub agentic wallet ID>` |
 | 6 | web3/read-contract | function=`wills`, args=[`{{@2:item}}`], extract `heir` field |
-| 7 | SendGrid send-email | to=`{{@6.heir}}`, subject="A Sayonara Switch you were named in has fired", body="Visit /heir/{{@2:item}} to read the final words." |
+| 7 | SendGrid send-email | to=`{{@6.heir}}`, subject="A KeeperSake addressed to you has been delivered", body="Visit /heir/{{@2:item}} to read the final words." |
 
 ## Inputs needed
 
-- `<VAULT_ADDRESS>` — the deployed `SayonaraVault` contract address
+- `<VAULT_ADDRESS>` — the deployed `KeeperSakeVault` contract address
 - A KeeperHub agentic wallet, funded with Base Sepolia ETH (so it can pay gas for `execute()`)
 - (Optional) SendGrid integration configured under KeeperHub Settings → Integrations
 

@@ -88,7 +88,7 @@ export default function DashboardPage() {
     );
   }
 
-  const [heir, , amount, willNoteHash, timeout, lastHeartbeat, executed] = w!;
+  const [heir, , amount, willNoteHash, timeout, lastHeartbeat, delivered] = w!;
   const elapsed = now - Number(lastHeartbeat);
   const remaining = Number(timeout) - elapsed;
   const expired = remaining <= 0;
@@ -101,13 +101,13 @@ export default function DashboardPage() {
       <main className="max-w-2xl mx-auto px-6 py-12">
         <div className="mb-8">
           <p className="text-xs uppercase tracking-widest text-zinc-500 mb-2">
-            Your switch
+            Your KeeperSake
           </p>
           <h1 className="text-3xl font-semibold">
-            {executed ? (
-              <span className="text-zinc-500">Sayonara — already executed</span>
+            {delivered ? (
+              <span className="text-zinc-500">Delivered — your KeeperSake reached its heir</span>
             ) : expired ? (
-              <span className="text-red-400">⚠️ Expired — KeeperHub will execute soon</span>
+              <span className="text-red-400">⚠️ Expired — KeeperHub will deliver soon</span>
             ) : (
               <span>You&apos;re alive.</span>
             )}
@@ -117,15 +117,15 @@ export default function DashboardPage() {
         <div className="border border-zinc-900 rounded-2xl bg-zinc-950 p-8 mb-6">
           <div className="text-center mb-6">
             <div className="text-6xl font-mono font-semibold tracking-tight mb-2">
-              {executed ? "—" : formatDuration(Math.max(0, remaining))}
+              {delivered ? "—" : formatDuration(Math.max(0, remaining))}
             </div>
-            <div className="text-sm text-zinc-500">until execution is allowed</div>
+            <div className="text-sm text-zinc-500">until delivery is allowed</div>
           </div>
 
           <div className="h-2 bg-zinc-900 rounded-full overflow-hidden mb-8">
             <div
               className={`h-full transition-all duration-500 ${
-                executed
+                delivered
                   ? "bg-zinc-700"
                   : expired
                   ? "bg-red-500"
@@ -138,7 +138,7 @@ export default function DashboardPage() {
           </div>
 
           <button
-            disabled={executed || isPending || mining}
+            disabled={delivered || isPending || mining}
             onClick={() =>
               writeContract({
                 address: VAULT_ADDRESS,
@@ -149,7 +149,7 @@ export default function DashboardPage() {
             }
             className="w-full bg-white text-black hover:bg-zinc-200 disabled:opacity-40 disabled:cursor-not-allowed font-medium py-4 rounded-xl text-lg"
           >
-            {isPending || mining ? "Beating…" : executed ? "Cannot heartbeat" : "❤️ I'm alive"}
+            {isPending || mining ? "Beating…" : delivered ? "Cannot heartbeat" : "❤️ I'm alive"}
           </button>
         </div>
 

@@ -7,19 +7,18 @@ export default function Home() {
       <Header />
       <main className="max-w-3xl mx-auto px-6 py-20">
         <p className="text-sm text-zinc-500 uppercase tracking-widest mb-4">
-          For the post-AI economy
+          An on-chain keepsake, kept by a Keeper
         </p>
         <h1 className="text-5xl md:text-6xl font-semibold tracking-tight leading-[1.05] mb-6">
-          The dead man&apos;s switch,
-          <br />
-          for crypto.
+          For when you<br />
+          go silent.
         </h1>
         <p className="text-lg text-zinc-400 max-w-xl mb-10 leading-relaxed">
-          Commit your USDC to an heir. Tap{" "}
-          <span className="text-zinc-200">&quot;I&apos;m alive&quot;</span> to
-          reset the timer. If you go silent past your timeout, a KeeperHub
-          workflow runs <span className="font-mono text-zinc-200">execute()</span>{" "}
-          for you and your heir inherits — automatically, on-chain, no lawyer.
+          Your USDC, your final words, your heir. Commit them once, then tap{" "}
+          <span className="text-zinc-200">&quot;I&apos;m alive&quot;</span> as
+          long as you are. The day you stop, a KeeperHub workflow runs{" "}
+          <span className="font-mono text-zinc-200">execute()</span> for you and
+          your heir inherits — automatically, on-chain, no lawyer.
         </p>
 
         <div className="flex flex-wrap gap-3 mb-16">
@@ -27,7 +26,7 @@ export default function Home() {
             href="/setup"
             className="bg-white text-black hover:bg-zinc-200 font-medium px-6 py-3 rounded-lg transition-colors"
           >
-            Set up your switch →
+            Set up your KeeperSake →
           </Link>
           <Link
             href="/demo"
@@ -50,7 +49,7 @@ export default function Home() {
           />
           <Step
             n="3"
-            title="Sayonara"
+            title="Delivery"
             body="Past timeout, KeeperHub calls execute(). USDC moves to your heir. Your final words become readable."
           />
         </div>
@@ -58,7 +57,7 @@ export default function Home() {
         <div className="mt-16 border-t border-zinc-900 pt-8 text-xs text-zinc-500 leading-relaxed">
           <p className="mb-2">
             <span className="text-zinc-300">How it works.</span> A
-            <span className="font-mono text-zinc-300"> SayonaraVault</span>{" "}
+            <span className="font-mono text-zinc-300"> KeeperSakeVault</span>{" "}
             contract on Base Sepolia stores your last heartbeat. A KeeperHub
             workflow — generated from natural language by Claude via the
             <span className="font-mono text-zinc-300"> ai_generate_workflow</span>{" "}

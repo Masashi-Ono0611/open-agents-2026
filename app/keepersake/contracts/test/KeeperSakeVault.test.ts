@@ -6,12 +6,12 @@ const NOTE = "0x" + "ab".repeat(32);
 const ONE_USDC = 1_000_000n; // 6 decimals
 const HUNDRED_USDC = 100n * ONE_USDC;
 
-describe("SayonaraVault", function () {
+describe("KeeperSakeVault", function () {
   async function deployFixture() {
     const [user, heir, keeper] = await ethers.getSigners();
     const Token = await ethers.getContractFactory("MockUSDC");
     const token = await Token.deploy();
-    const Vault = await ethers.getContractFactory("SayonaraVault");
+    const Vault = await ethers.getContractFactory("KeeperSakeVault");
     const vault = await Vault.deploy();
     await token.connect(user).faucet(); // user gets 100 USDC
     return { vault, token, user, heir, keeper };
@@ -32,7 +32,7 @@ describe("SayonaraVault", function () {
     expect(w.heir).to.equal(heir.address);
     expect(w.amount).to.equal(HUNDRED_USDC);
     expect(w.timeout).to.equal(60);
-    expect(w.executed).to.equal(false);
+    expect(w.delivered).to.equal(false);
   });
 
   it("rejects zero heir, self heir, zero amount, zero timeout", async function () {
@@ -77,7 +77,7 @@ describe("SayonaraVault", function () {
     ).to.be.revertedWithCustomError(vault, "StillAlive");
   });
 
-  it("execute transfers to heir after timeout", async function () {
+  it("execute delivers to heir after timeout", async function () {
     const { vault, token, user, heir, keeper } = await deployFixture();
     await token.connect(user).approve(await vault.getAddress(), ONE_USDC);
     await vault
@@ -85,7 +85,7 @@ describe("SayonaraVault", function () {
       .commit(heir.address, await token.getAddress(), ONE_USDC, NOTE, 60);
     await time.increase(61);
     await expect(vault.connect(keeper).execute(user.address))
-      .to.emit(vault, "Sayonara")
+      .to.emit(vault, "KeeperSakeDelivered")
       .withArgs(
         user.address,
         heir.address,
@@ -94,7 +94,7 @@ describe("SayonaraVault", function () {
         NOTE
       );
     expect(await token.balanceOf(heir.address)).to.equal(ONE_USDC);
-    expect((await vault.wills(user.address)).executed).to.equal(true);
+    expect((await vault.wills(user.address)).delivered).to.equal(true);
   });
 
   it("execute can only be called once", async function () {
@@ -107,7 +107,7 @@ describe("SayonaraVault", function () {
     await vault.connect(keeper).execute(user.address);
     await expect(
       vault.connect(keeper).execute(user.address)
-    ).to.be.revertedWithCustomError(vault, "AlreadyExecuted");
+    ).to.be.revertedWithCustomError(vault, "AlreadyDelivered");
   });
 
   it("revoke wipes the will", async function () {

@@ -1,6 +1,6 @@
 # KeeperHub Builder Feedback
 
-Built by Masa during ETHGlobal Open Agents 2026, integrating KeeperHub into **Sayonara Switch** — a permissionless dead man's switch where a KeeperHub workflow polls on-chain heartbeats and calls `execute(user)` when a user goes silent past their timeout.
+Built by Masa during ETHGlobal Open Agents 2026, integrating KeeperHub into **KeeperSake** — a permissionless dead man's switch where a KeeperHub workflow polls on-chain heartbeats and calls `execute(user)` when a user goes silent past their timeout, delivering the user's USDC and final words to the heir.
 
 This file captures the friction and wins from a first-time integration. Specific, reproducible, actionable — per the bounty rules.
 
@@ -46,14 +46,14 @@ When I commit a will and the KeeperHub workflow tries to call `execute()` later,
 
 ## Documentation gaps I hit
 
-- **No quickstart for "KeeperHub from a Next.js app"**: the docs cover MCP and CLI but not "how do I read whether a workflow has run from my frontend". I ended up just polling on-chain `Sayonara` events instead, which is fine but means KeeperHub is invisible from the user's view.
+- **No quickstart for "KeeperHub from a Next.js app"**: the docs cover MCP and CLI but not "how do I read whether a workflow has run from my frontend". I ended up just polling on-chain `KeeperSakeDelivered` events instead, which is fine but means KeeperHub is invisible from the user's view.
 - **Schedule + per-row execution pattern**: the canonical pattern of "schedule fires → for-each over a list of addresses → branch per item" is exactly what production keepers do. A template for it would have saved 30 minutes.
 - **What does `validate_plugin_config` do *before* committing?** I called it once and got back what looked like a no-op success even when the config was clearly wrong. Needs a worked example.
 
 ## Feature requests, ranked
 
 1. **`watch_event` trigger** — instead of polling `isExpired`, let the workflow trigger on the contract's `Heartbeat` event firing too long ago. This would halve gas usage across the network and is the natural fit for "react to on-chain state".
-2. **Conditional re-arm** — let a workflow disable itself after success (so `execute()` never gets retried after the will has executed). Currently I set `executed=true` in the contract and rely on `isExpired` returning false; an in-workflow `disable_self` action would be cleaner.
+2. **Conditional re-arm** — let a workflow disable itself after success (so `execute()` never gets retried after the KeeperSake has been delivered). Currently I set `delivered=true` in the contract and rely on `isExpired` returning false; an in-workflow `disable_self` action would be cleaner.
 3. **Per-user workflow templating** — at signup time I'd love to call something like `instantiate_template(template_id, vars={user: 0xabc})` and get a fresh workflow for that user, all from the frontend. Currently I have one workflow watching a list, which has to know the list ahead of time.
 
 ## Score (subjective)

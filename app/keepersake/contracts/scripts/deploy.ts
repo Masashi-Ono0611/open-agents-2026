@@ -7,11 +7,11 @@ async function main() {
   const [deployer] = await ethers.getSigners();
   console.log("Deploying with account:", deployer.address);
 
-  const Vault = await ethers.getContractFactory("SayonaraVault");
+  const Vault = await ethers.getContractFactory("KeeperSakeVault");
   const vault = await Vault.deploy();
   await vault.waitForDeployment();
   const vaultAddress = await vault.getAddress();
-  console.log("SayonaraVault deployed to:", vaultAddress);
+  console.log("KeeperSakeVault deployed to:", vaultAddress);
   console.log("Using existing Base Sepolia USDC:", BASE_SEPOLIA_USDC);
 
   console.log("\nUpdate frontend/lib/contracts.ts with:");

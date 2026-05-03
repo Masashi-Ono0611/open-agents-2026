@@ -10,7 +10,7 @@ export default function DemoPage() {
       <main className="max-w-2xl mx-auto px-6 py-12">
         <h1 className="text-3xl font-semibold mb-2">60-second judge demo</h1>
         <p className="text-zinc-400 mb-10">
-          The fastest way to see Sayonara Switch fire end-to-end.
+          The fastest way to see a KeeperSake delivered end-to-end.
         </p>
 
         <ol className="space-y-5">
@@ -104,13 +104,13 @@ export default function DemoPage() {
           </h2>
           <p className="text-sm text-zinc-400 mb-4">
             <code>execute()</code> is permissionless. From any wallet (including
-            the heir), once the switch is past timeout, anyone can call it
+            the heir), once a KeeperSake is past timeout, anyone can call it
             directly. KeeperHub is the convenience; the contract doesn&apos;t
             depend on it.
           </p>
           <p className="text-xs text-zinc-500">
             For the live judge demo, the workflow polls every 60 seconds, so
-            execution lands within a minute of expiry.
+            delivery lands within a minute of expiry.
           </p>
         </div>
       </main>

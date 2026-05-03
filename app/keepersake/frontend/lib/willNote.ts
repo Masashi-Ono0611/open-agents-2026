@@ -1,6 +1,6 @@
 import { keccak256, toBytes, toHex } from "viem";
 
-const STORAGE_PREFIX = "sayonara-will-note-";
+const STORAGE_PREFIX = "keepersake-will-note-";
 
 export function hashWillNote(text: string): `0x${string}` {
   return keccak256(toBytes(text));

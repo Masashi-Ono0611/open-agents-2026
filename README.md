@@ -2,26 +2,24 @@
 
 App built for [ETHGlobal Open Agents hackathon](https://ethglobal.com/events/openagents) (April 24 – May 6, 2026).
 
-## Sayonara Switch ⚰️
+## KeeperSake 🍶
 
-> The dead man's switch for the post-AI economy.
+> An on-chain keepsake, kept by a Keeper.
 
-Commit your cbBTC to an heir. Tap "I'm alive" to reset the timer. If you go silent past
-your timeout, a KeeperHub workflow runs `execute()` for you and your heir inherits —
-automatically, on-chain, no lawyer.
+Your USDC, your final words, your heir. Commit them once, then tap "I'm alive" as long as you are. The day you stop, a KeeperHub workflow runs `execute()` on your behalf and your heir inherits — automatically, on-chain, no lawyer.
 
-Lives in [`app/sayonara-switch/`](./app/sayonara-switch/). See its
-[README](./app/sayonara-switch/README.md) for setup, the
-[KeeperHub workflow doc](./app/sayonara-switch/docs/keeperhub-workflow.md) for the
-natural-language prompt to generate the watcher, and
-[`FEEDBACK.md`](./app/sayonara-switch/FEEDBACK.md) for the Builder Feedback Bounty submission.
+Lives in [`app/keepersake/`](./app/keepersake/). See its
+[README](./app/keepersake/README.md) for setup, the
+[KeeperHub workflow doc](./app/keepersake/docs/keeperhub-workflow.md) for the
+natural-language prompt that generates the watcher, and
+[`FEEDBACK.md`](./app/keepersake/FEEDBACK.md) for the Builder Feedback Bounty submission.
 
 Built for the **KeeperHub** track at ETHGlobal Open Agents.
 
 ## Getting Started
 
 ```bash
-cd app/sayonara-switch/contracts
+cd app/keepersake/contracts
 bun install && bun run test && bun run deploy:baseSepolia
 
 cd ../frontend

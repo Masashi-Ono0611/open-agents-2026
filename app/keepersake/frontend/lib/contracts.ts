@@ -3,7 +3,7 @@
 // TOKEN_ADDRESS is Circle's official USDC on Base Sepolia.
 // Faucet: https://faucet.circle.com/
 export const VAULT_ADDRESS =
-  "0x0000000000000000000000000000000000000000" as `0x${string}`;
+  "0x3A22bD29499702bEbc4225BfcDEAaE5DD8ae8743" as `0x${string}`;
 export const TOKEN_ADDRESS =
   "0x036CbD53842c5426634e7929541eC2318f3dCF7e" as `0x${string}`;
 export const TOKEN_SYMBOL = "USDC";
@@ -53,7 +53,7 @@ export const VAULT_ABI = [
       { name: "willNoteHash", type: "bytes32" },
       { name: "timeout", type: "uint64" },
       { name: "lastHeartbeat", type: "uint64" },
-      { name: "executed", type: "bool" },
+      { name: "delivered", type: "bool" },
     ],
     stateMutability: "view",
     type: "function",
@@ -103,7 +103,7 @@ export const VAULT_ABI = [
       { indexed: false, name: "amount", type: "uint256" },
       { indexed: false, name: "willNoteHash", type: "bytes32" },
     ],
-    name: "Sayonara",
+    name: "KeeperSakeDelivered",
     type: "event",
   },
 ] as const;

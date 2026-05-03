@@ -1,5 +1,5 @@
 {
-  "name": "sayonara-switch-contracts",
+  "name": "keepersake-contracts",
   "version": "0.1.0",
   "scripts": {
     "compile": "hardhat compile",
