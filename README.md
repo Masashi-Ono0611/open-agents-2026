@@ -38,6 +38,26 @@ cp .env.example .env.local        # set NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID
 bun run dev                       # http://localhost:3000
 ```
 
+## Claude Code skills (the agent-runtime side)
+
+Two `.claude/skills/` shipped with this submission. Both call the **KeeperHub MCP server** directly — no frontend, no backend, just an English prompt → onchain action.
+
+### 🍶 [`keeperhub-pilot`](./.claude/skills/keeperhub-pilot/SKILL.md)
+> One prompt → one workflow → one tx.
+
+Encodes the gotchas the KeeperSake build surfaced (network must be a chain-id string, tokenConfig must be a JSON string, integrationId is required, template syntax is `{{@id:Label.data.field}}`) so any developer or agent can invoke "send 0.5 USDC to alice" and get a tx hash back without re-discovering them. See [`examples/`](./.claude/skills/keeperhub-pilot/examples) for verified runs.
+
+### 🎴 [`omikuji-hub`](./.claude/skills/omikuji-hub/SKILL.md)
+> An onchain shrine where the priest is a KeeperHub agentic wallet. Every pull pays — even the bad fortunes.
+
+Pulls a Japanese-style fortune (Daikichi → Daikyō) deterministically from `keccak256(blockHash + askerAddress + utcDate)` and **always** drops a real USDC reward whose amount escalates with rarity (0.005 → 0.00005). Demonstrates the full "AI decides → KeeperHub executes" pattern in a self-contained, judge-friendly skill. Verified runs in [`examples/01-pull-fortune.md`](./.claude/skills/omikuji-hub/examples/01-pull-fortune.md).
+
+To use either skill yourself:
+```bash
+claude mcp add --transport http keeperhub https://app.keeperhub.com/mcp
+# complete browser OAuth, then ask Claude to invoke the skill
+```
+
 ## Docs
 
 - Hackathon: [overview](docs/hackathon/overview.md) · [prize details](docs/hackathon/prizes.md) · [schedule](docs/hackathon/schedule.md)
