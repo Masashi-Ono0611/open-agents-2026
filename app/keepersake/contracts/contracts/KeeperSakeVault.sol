@@ -36,10 +36,16 @@ contract KeeperSakeVault {
     );
     event Heartbeat(address indexed user, uint64 timestamp);
     /// @notice Fired when a will has been delivered to its heir.
+    /// @param caller The address that invoked `execute()` (KeeperHub workflow,
+    ///        the heir, a bot, or anyone else — execute is permissionless).
+    /// @dev   `token` is left non-indexed so that `caller` can take an indexed
+    ///        slot. Frontends typically already know the token; they more often
+    ///        want to filter by who triggered the delivery.
     event KeeperSakeDelivered(
         address indexed user,
         address indexed heir,
-        address indexed token,
+        address indexed caller,
+        address token,
         uint256 amount,
         bytes32 willNoteHash
     );
@@ -112,7 +118,14 @@ contract KeeperSakeVault {
         w.delivered = true;
         w.token.safeTransferFrom(user, w.heir, w.amount);
 
-        emit KeeperSakeDelivered(user, w.heir, address(w.token), w.amount, w.willNoteHash);
+        emit KeeperSakeDelivered(
+            user,
+            w.heir,
+            msg.sender,
+            address(w.token),
+            w.amount,
+            w.willNoteHash
+        );
     }
 
     // ─── views (KeeperHub reads these) ──────────────────────────────────────

@@ -1,16 +1,20 @@
 "use client";
 
 import { use, useCallback, useEffect, useState } from "react";
+import { parseAbiItem } from "viem";
 import {
   useAccount,
+  usePublicClient,
   useReadContract,
   useWaitForTransactionReceipt,
+  useWatchContractEvent,
   useWriteContract,
 } from "wagmi";
 import toast from "react-hot-toast";
 import { baseSepolia } from "wagmi/chains";
 import Link from "next/link";
 import { Header } from "@/components/Header";
+import { KeeperHubLog } from "@/components/KeeperHubLog";
 import {
   VAULT_ABI,
   VAULT_ADDRESS,
@@ -42,6 +46,62 @@ export default function HeirPage({
     chainId: baseSepolia.id,
     query: { refetchInterval: 5000 },
   });
+
+  // Track who actually called execute() so we can credit KeeperHub vs the
+  // heir vs a stranger in the "Delivered by 0x…" line.
+  const [deliveredBy, setDeliveredBy] = useState<`0x${string}` | null>(null);
+  const publicClient = usePublicClient({ chainId: baseSepolia.id });
+
+  // Live (after mount): pick up new deliveries instantly.
+  useWatchContractEvent({
+    address: VAULT_ADDRESS,
+    abi: VAULT_ABI,
+    eventName: "KeeperSakeDelivered",
+    chainId: baseSepolia.id,
+    onLogs(logs) {
+      for (const l of logs) {
+        const args = (l as unknown as {
+          args: { user: `0x${string}`; caller: `0x${string}` };
+        }).args;
+        if (args.user.toLowerCase() === senderAddr.toLowerCase()) {
+          setDeliveredBy(args.caller);
+        }
+      }
+    },
+  });
+
+  // Historical: if the page is opened *after* delivery already happened,
+  // useWatchContractEvent never sees it. Fetch the past delivery via
+  // getLogs once we know the will is delivered.
+  useEffect(() => {
+    if (!publicClient || deliveredBy) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const latest = await publicClient.getBlockNumber();
+        const fromBlock = latest > 50_000n ? latest - 50_000n : 0n;
+        const logs = await publicClient.getLogs({
+          address: VAULT_ADDRESS,
+          event: parseAbiItem(
+            "event KeeperSakeDelivered(address indexed user, address indexed heir, address indexed caller, address token, uint256 amount, bytes32 willNoteHash)"
+          ),
+          args: { user: senderAddr as `0x${string}` },
+          fromBlock,
+          toBlock: latest,
+        });
+        if (cancelled || logs.length === 0) return;
+        const args = (logs[logs.length - 1] as unknown as {
+          args: { caller: `0x${string}` };
+        }).args;
+        setDeliveredBy(args.caller);
+      } catch (e) {
+        console.error("[heir] historical delivery fetch failed:", e);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [publicClient, deliveredBy, senderAddr]);
 
   // Permissionless execute() — anyone (the heir, a stranger) can trigger
   // delivery once the will is past timeout. This page exposes that fact as
@@ -127,11 +187,25 @@ export default function HeirPage({
                 {Number(amount) / 10 ** TOKEN_DECIMALS} {TOKEN_SYMBOL}
               </span>
             </h1>
-            <p className="text-zinc-400 mb-10 leading-relaxed">
-              KeeperHub fired <code>execute()</code> on the sender&apos;s
-              behalf. The USDC has already landed in the heir&apos;s wallet.
-              The final words below are now public.
+            <p className="text-zinc-400 mb-2 leading-relaxed">
+              <code>execute()</code> has been called. The USDC has landed in
+              the heir&apos;s wallet. The final words below are now public.
             </p>
+            {deliveredBy && (
+              <p className="text-sm text-zinc-500 mb-10">
+                Delivered by{" "}
+                <a
+                  href={`https://sepolia.basescan.org/address/${deliveredBy}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="font-mono text-zinc-300 hover:underline"
+                >
+                  {shortAddr(deliveredBy)}
+                </a>
+                .
+              </p>
+            )}
+            {!deliveredBy && <div className="mb-10" />}
           </>
         ) : expired ? (
           <>
@@ -202,6 +276,8 @@ export default function HeirPage({
             ✓ You are the named heir for this KeeperSake.
           </div>
         )}
+
+        <KeeperHubLog />
 
         <div className="border border-zinc-900 rounded-2xl bg-zinc-950 p-8">
           <div className="text-xs uppercase tracking-widest text-zinc-500 mb-3">

@@ -11,6 +11,7 @@ import { baseSepolia } from "wagmi/chains";
 import toast from "react-hot-toast";
 import Link from "next/link";
 import { Header } from "@/components/Header";
+import { KeeperHubLog } from "@/components/KeeperHubLog";
 import { KeeperHubStatus } from "@/components/KeeperHubStatus";
 import {
   VAULT_ABI,
@@ -232,6 +233,7 @@ export default function DashboardPage() {
         </div>
 
         <KeeperHubStatus />
+        <KeeperHubLog />
 
         {/* Will details */}
         <dl className="border border-zinc-900 rounded-xl bg-zinc-950 divide-y divide-zinc-900 text-sm mb-6">

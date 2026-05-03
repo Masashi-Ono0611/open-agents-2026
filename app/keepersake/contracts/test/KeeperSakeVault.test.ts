@@ -77,7 +77,7 @@ describe("KeeperSakeVault", function () {
     ).to.be.revertedWithCustomError(vault, "StillAlive");
   });
 
-  it("execute delivers to heir after timeout", async function () {
+  it("execute delivers to heir after timeout, exposing the caller", async function () {
     const { vault, token, user, heir, keeper } = await deployFixture();
     await token.connect(user).approve(await vault.getAddress(), ONE_USDC);
     await vault
@@ -89,6 +89,7 @@ describe("KeeperSakeVault", function () {
       .withArgs(
         user.address,
         heir.address,
+        keeper.address,
         await token.getAddress(),
         ONE_USDC,
         NOTE

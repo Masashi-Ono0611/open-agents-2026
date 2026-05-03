@@ -10,7 +10,7 @@ import { shortAddr } from "@/lib/format";
 // Match docs/keeperhub-workflow.md (schedule trigger). Override with
 // NEXT_PUBLIC_KEEPERHUB_POLL_PERIOD if your workflow uses a different one.
 const POLL_PERIOD = Number(
-  process.env.NEXT_PUBLIC_KEEPERHUB_POLL_PERIOD ?? 60
+  process.env.NEXT_PUBLIC_KEEPERHUB_POLL_PERIOD ?? 30
 );
 
 type DeliveryEvent = {

@@ -18,9 +18,7 @@ import {
 import { saveWillNote } from "@/lib/willNote";
 
 const TIMEOUT_PRESETS = [
-  { label: "60s (demo)", seconds: 60 },
-  { label: "10m", seconds: 600 },
-  { label: "1d", seconds: 86400 },
+  { label: "30s (demo)", seconds: 30 },
   { label: "30d (real)", seconds: 30 * 86400 },
 ];
 
@@ -32,7 +30,7 @@ export default function SetupPage() {
   const [note, setNote] = useState(
     "To my heir,\n\nIf you are reading this, I am gone. The bag is yours. Use it well.\n\n— me"
   );
-  const [timeout, setTimeoutSec] = useState(60);
+  const [timeout, setTimeoutSec] = useState(30);
   const [step, setStep] = useState<"form" | "approve" | "commit" | "done">("form");
 
   const { data: allowance } = useReadContract({
@@ -141,18 +139,17 @@ export default function SetupPage() {
     <>
       <Header />
       <main className="max-w-2xl mx-auto px-6 py-12">
-        <h1 className="text-3xl font-semibold mb-2">Set up your switch</h1>
+        <h1 className="text-3xl font-semibold mb-2">Set up your KeeperSake</h1>
         <p className="text-zinc-400 mb-10">
-          The vault holds nothing. It only gets permission to move{" "}
-          <code className="text-zinc-200">amount</code> of your {TOKEN_SYMBOL} if you go silent.
+          Funds stay in your wallet — the vault only gets an allowance.
         </p>
 
         <div className="space-y-6">
-          <Field label="Heir address">
+          <Field label="Heir's wallet">
             <input
               value={heir}
               onChange={(e) => setHeir(e.target.value)}
-              placeholder="0x…"
+              placeholder="0x… (a wallet you trust — spouse, kid, second wallet)"
               className="w-full bg-zinc-900 border border-zinc-800 rounded-md px-3 py-2.5 font-mono text-sm focus:outline-none focus:border-zinc-600"
             />
             {heir && !heirValid && (
@@ -170,7 +167,7 @@ export default function SetupPage() {
             label={`Amount (${TOKEN_SYMBOL})`}
             hint={
               balance !== undefined
-                ? `Balance: ${Number(balance) / 10 ** TOKEN_DECIMALS} ${TOKEN_SYMBOL}`
+                ? `Balance: ${Number(balance) / 10 ** TOKEN_DECIMALS}`
                 : undefined
             }
           >
@@ -182,16 +179,15 @@ export default function SetupPage() {
               className="w-full bg-zinc-900 border border-zinc-800 rounded-md px-3 py-2.5 font-mono text-sm focus:outline-none focus:border-zinc-600"
             />
             <p className="text-xs text-zinc-500 mt-1.5">
-              Need test {TOKEN_SYMBOL}? Get some from{" "}
+              No test {TOKEN_SYMBOL}?{" "}
               <a
                 href="https://faucet.circle.com/"
                 target="_blank"
                 rel="noreferrer"
                 className="underline hover:text-zinc-300"
               >
-                Circle&apos;s Base Sepolia faucet
+                Circle faucet ↗
               </a>
-              .
             </p>
           </Field>
 
@@ -199,16 +195,16 @@ export default function SetupPage() {
             <textarea
               value={note}
               onChange={(e) => setNote(e.target.value)}
-              rows={6}
+              rows={5}
+              placeholder="A message your heir reads on delivery."
               className="w-full bg-zinc-900 border border-zinc-800 rounded-md px-3 py-2.5 text-sm leading-relaxed focus:outline-none focus:border-zinc-600"
             />
-            <p className="text-xs text-zinc-500 mt-1.5">
-              Stored locally for the demo. The keccak hash goes on-chain so the heir
-              can verify the note hasn&apos;t been tampered with.
-            </p>
           </Field>
 
-          <Field label="Timeout">
+          <Field
+            label="Inactivity timeout"
+            hint="silence before delivery"
+          >
             <div className="flex gap-2 flex-wrap">
               {TIMEOUT_PRESETS.map((p) => (
                 <button

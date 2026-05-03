@@ -19,23 +19,42 @@ KeeperSake is the simplest possible answer. A single contract, a single button, 
 Next.js 15 (Vercel)
   ├ /              — Landing
   ├ /setup         — Will commit wizard (heir / amount / note / timeout)
-  ├ /dashboard     — Countdown + "I'm alive" button
-  ├ /heir/[addr]   — Heir's view: pending vs delivered, with hash-verified note
-  └ /demo          — 60-second judge walkthrough
+  ├ /dashboard     — Countdown + "I'm alive" + live keeper feed
+  └ /heir/[addr]   — Heir's view: pending vs delivered, hash-verified note,
+                     "Trigger delivery now" if expired, live keeper feed
                 ▼ wagmi / viem
-Base Sepolia
+Base Sepolia (KeeperSakeVault: 0xa20f6bA5A1d21345B2332BDC79b438B6cBcCFa23)
   └ KeeperSakeVault.sol         ← stores wills + lastHeartbeat (read by KeeperHub)
   USDC (Circle official)        ← 0x036CbD53842c5426634e7929541eC2318f3dCF7e
                 ▲
                 │ web3/read-contract → condition → web3/write-contract
 KeeperHub workflow (created via `ai_generate_workflow` MCP tool)
-  Trigger: schedule (60s in demo, 1d in prod)
+  Trigger: schedule (30s for the demo, hours/days in prod)
   Steps:
     1. read isExpired(USER)
     2. condition: == true
     3. write execute(USER)
     4. notify heir (SendGrid / Discord)
 ```
+
+## Live keeper feed (the judge view)
+
+The dashboard and the heir page both render a **🍶 Live keeper feed** — a
+scrollable activity log inspired by the side-by-side debate stream from
+Masa's Jupiter Prize-winning [`claw-vs-claude`](https://github.com/Masashi-Ono0611/claw-vs-claude). Rows are color-coded:
+
+- 🔵 `poll` — synthesized at the workflow's schedule cadence (frontend
+  simulation, honestly labeled as such — KeeperHub has no public REST
+  status endpoint to query, see `FEEDBACK.md` F8)
+- 🩺 `Heartbeat` / 📝 `WillCommitted` / 🗑️ `WillRevoked` — real on-chain
+  events streamed via `useWatchContractEvent`
+- 💌 `KeeperSakeDelivered` — real on-chain event. The `caller` field
+  (an indexed parameter on the event) is compared to
+  `NEXT_PUBLIC_KEEPERHUB_KEEPER_ADDRESS`. Match → green
+  `KeeperHub delivered…` row. Otherwise → orange `<addr> delivered…` row
+  (e.g. heir self-trigger, third-party MEV-style).
+
+This gives a judge a single screen to verify the keeper is alive.
 
 ## Why KeeperHub
 
@@ -78,10 +97,10 @@ automatically.
 ## 60-second demo
 
 1. Connect a wallet on Base Sepolia (top up ETH via [Coinbase faucet](https://www.coinbase.com/faucets/base-ethereum-sepolia-faucet); USDC via [Circle faucet](https://faucet.circle.com/))
-2. `/setup` → fill heir, amount `1` USDC, note, timeout **60s** → Approve → Commit
-3. `/dashboard` → watch the countdown. **Don't click "I'm alive."**
-4. At 0s the KeeperHub workflow fires within ~60s → `KeeperSakeDelivered` event emitted
-5. `/heir/<your-address>` → final words readable, hash verified
+2. `/setup` → fill heir, amount `1` USDC, note, timeout **30s (demo)** → Approve → Commit
+3. `/dashboard` → watch the countdown and the live keeper feed. **Don't click "I'm alive."**
+4. At 0s the KeeperHub workflow fires within ~30s → `KeeperSakeDelivered` event emitted, feed highlights it green as "KeeperHub delivered…"
+5. `/heir/<your-address>` → final words readable, hash verified, "Delivered by 0xKEEP…" line
 
 ## Testnet resources
 

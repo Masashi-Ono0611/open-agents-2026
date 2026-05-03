@@ -64,6 +64,10 @@ I built `/dashboard` to show "your KeeperSake is being watched" but I had no API
 
 **Suggested fix**: a **public read-only REST endpoint per workflow** (`GET https://app.keeperhub.com/api/workflows/<id>/status`) returning `{ enabled, lastFiredAt, nextScheduledAt, totalRuns }`. Optional CORS allowlist per workflow so my Vercel app can fetch it directly. This is what I'd put a "🟢 KeeperHub: watching, next check in 47s" badge on the dashboard — turning KeeperHub from infrastructure into a visible reliability signal for the user.
 
+**Update — what I shipped instead**: I worked around half of this on-chain. The `KeeperSakeDelivered` event now indexes the `caller` (the address that invoked `execute()`), and the frontend (`components/KeeperHubLog.tsx`) listens to it via `useWatchContractEvent`. When the caller matches the configured KeeperHub agentic wallet address, the row renders as a green `KeeperHub delivered…` line; otherwise it renders as an orange `<addr> delivered…` line (e.g. an heir self-trigger). That gives judges a real on-chain proof that the keeper fired.
+
+What I *still* can't prove is the cadence: the "🔵 poll" rows in the feed are synthesized at the workflow's schedule interval (configurable via `NEXT_PUBLIC_KEEPERHUB_POLL_PERIOD`) — they're explicitly labeled as a simulation in the UI's help copy because there is no public way to confirm a `read-contract` step actually ran on the KeeperHub side without a tx landing. The proposed `GET /api/workflows/<id>/runs` (with caller, step, status, ts per run) would let me promote those rows from synthetic to ground-truth and remove the asterisk.
+
 ## Documentation gaps I hit
 
 - **No quickstart for "KeeperHub from a Next.js app"**: the docs cover MCP and CLI but not "how do I read whether a workflow has run from my frontend". I ended up just polling on-chain `KeeperSakeDelivered` events instead, which is fine but means KeeperHub is invisible from the user's view.

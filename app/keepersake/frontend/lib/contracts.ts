@@ -3,7 +3,7 @@
 // TOKEN_ADDRESS is Circle's official USDC on Base Sepolia.
 // Faucet: https://faucet.circle.com/
 export const VAULT_ADDRESS =
-  "0x3A22bD29499702bEbc4225BfcDEAaE5DD8ae8743" as `0x${string}`;
+  "0xa20f6bA5A1d21345B2332BDC79b438B6cBcCFa23" as `0x${string}`;
 export const TOKEN_ADDRESS =
   "0x036CbD53842c5426634e7929541eC2318f3dCF7e" as `0x${string}`;
 export const TOKEN_SYMBOL = "USDC";
@@ -99,11 +99,18 @@ export const VAULT_ABI = [
     inputs: [
       { indexed: true, name: "user", type: "address" },
       { indexed: true, name: "heir", type: "address" },
-      { indexed: true, name: "token", type: "address" },
+      { indexed: true, name: "caller", type: "address" },
+      { indexed: false, name: "token", type: "address" },
       { indexed: false, name: "amount", type: "uint256" },
       { indexed: false, name: "willNoteHash", type: "bytes32" },
     ],
     name: "KeeperSakeDelivered",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [{ indexed: true, name: "user", type: "address" }],
+    name: "WillRevoked",
     type: "event",
   },
 ] as const;
