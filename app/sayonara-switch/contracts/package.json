@@ -1,10 +1,13 @@
 {
-  "name": "demo-dapp-contracts",
-  "version": "1.0.0",
+  "name": "sayonara-switch-contracts",
+  "version": "0.1.0",
   "scripts": {
     "compile": "hardhat compile",
     "test": "hardhat test",
     "deploy:baseSepolia": "hardhat run scripts/deploy.ts --network baseSepolia"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^5.0.0"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
