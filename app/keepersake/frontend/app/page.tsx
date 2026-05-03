@@ -29,10 +29,10 @@ export default function Home() {
             Set up your KeeperSake →
           </Link>
           <Link
-            href="/demo"
+            href="/dashboard"
             className="border border-zinc-800 hover:bg-zinc-900 text-zinc-300 font-medium px-6 py-3 rounded-lg transition-colors"
           >
-            See a 60-second demo
+            Already have one? Open dashboard
           </Link>
         </div>
 

@@ -39,14 +39,14 @@ export default function DashboardPage() {
     query: { refetchInterval: 5000 },
   });
 
-  const { writeContract, data: hbTx, isPending } = useWriteContract();
-  const { isLoading: mining, isSuccess: hbSuccess } = useWaitForTransactionReceipt({
-    hash: hbTx,
-  });
+  // Heartbeat ────────────────────────────────────────────────────────────────
+  const { writeContract: writeHeartbeat, data: hbTx, isPending: hbPending } =
+    useWriteContract();
+  const { isLoading: hbMining, isSuccess: hbSuccess } =
+    useWaitForTransactionReceipt({ hash: hbTx });
 
-  // We snapshot the on-chain lastHeartbeat at the moment the user clicks the
-  // button, then poll until the chain returns a strictly newer value. Toast +
-  // countdown reset both happen on the same React render — no visible drift.
+  // Snapshot the on-chain lastHeartbeat at click; poll until it strictly
+  // advances; toast + countdown reset on the same render.
   const snapshotHbRef = useRef<bigint | null>(null);
   const [pendingHb, setPendingHb] = useState(false);
 
@@ -60,16 +60,14 @@ export default function DashboardPage() {
       snapshotHbRef.current = lastHeartbeatOnChain;
     }
     setPendingHb(true);
-    writeContract({
+    writeHeartbeat({
       address: VAULT_ADDRESS,
       abi: VAULT_ABI,
       functionName: "heartbeat",
       chainId: baseSepolia.id,
     });
-  }, [lastHeartbeatOnChain, writeContract]);
+  }, [lastHeartbeatOnChain, writeHeartbeat]);
 
-  // After tx is mined, poll the chain every 500ms until lastHeartbeat advances
-  // (don't wait for the default 5s refetch interval).
   useEffect(() => {
     if (!pendingHb || !hbSuccess) return;
     refetch();
@@ -77,8 +75,6 @@ export default function DashboardPage() {
     return () => clearInterval(interval);
   }, [hbSuccess, pendingHb, refetch]);
 
-  // Observe lastHeartbeatOnChain. The instant it advances past the snapshot,
-  // the countdown will reset on this render — fire the toast at the same time.
   useEffect(() => {
     if (
       !pendingHb ||
@@ -93,12 +89,44 @@ export default function DashboardPage() {
     }
   }, [lastHeartbeatOnChain, pendingHb]);
 
+  // Revoke ──────────────────────────────────────────────────────────────────
+  const { writeContract: writeRevoke, data: revokeTx, isPending: revokePending } =
+    useWriteContract();
+  const { isLoading: revokeMining, isSuccess: revokeSuccess } =
+    useWaitForTransactionReceipt({ hash: revokeTx });
+
+  useEffect(() => {
+    if (revokeSuccess) {
+      toast.success("Revoked. Your will is gone.");
+      refetch();
+    }
+  }, [revokeSuccess, refetch]);
+
+  const onRevokeClick = useCallback(() => {
+    if (
+      !window.confirm(
+        "Revoke this KeeperSake? Your heir gets nothing. Your USDC stays in your wallet. This cannot be undone."
+      )
+    )
+      return;
+    writeRevoke({
+      address: VAULT_ADDRESS,
+      abi: VAULT_ABI,
+      functionName: "revoke",
+      chainId: baseSepolia.id,
+    });
+  }, [writeRevoke]);
+
+  // Render guards ────────────────────────────────────────────────────────────
   if (!isConnected) {
     return (
       <>
         <Header />
-        <main className="max-w-xl mx-auto px-6 py-20">
+        <main className="max-w-xl mx-auto px-6 py-20 text-center">
           <h1 className="text-3xl font-semibold mb-3">Connect your wallet</h1>
+          <p className="text-zinc-400">
+            We need to read your address before we can show your KeeperSake.
+          </p>
         </main>
       </>
     );
@@ -112,15 +140,18 @@ export default function DashboardPage() {
       <>
         <Header />
         <main className="max-w-xl mx-auto px-6 py-20 text-center">
-          <h1 className="text-3xl font-semibold mb-3">No switch set up yet.</h1>
+          <h1 className="text-3xl font-semibold mb-3">
+            No KeeperSake set up yet.
+          </h1>
           <p className="text-zinc-400 mb-6">
-            You haven&apos;t committed a will. Nothing will happen if you go silent.
+            You haven&apos;t committed a will. Nothing will happen if you go
+            silent.
           </p>
           <Link
             href="/setup"
             className="inline-block bg-white text-black hover:bg-zinc-200 font-medium px-5 py-2.5 rounded-lg"
           >
-            Set up your switch →
+            Set up your KeeperSake →
           </Link>
         </main>
       </>
@@ -135,6 +166,9 @@ export default function DashboardPage() {
   const pct = Math.max(0, Math.min(100, (elapsed / Number(timeout)) * 100));
   const note = !isZeroHash(willNoteHash) ? loadWillNote(willNoteHash) : null;
 
+  const heirShareUrl =
+    typeof window !== "undefined" ? `${window.location.origin}/heir/${address}` : "";
+
   return (
     <>
       <Header />
@@ -145,21 +179,28 @@ export default function DashboardPage() {
           </p>
           <h1 className="text-3xl font-semibold">
             {delivered ? (
-              <span className="text-zinc-500">Delivered — your KeeperSake reached its heir</span>
+              <span className="text-zinc-500">
+                Delivered — your KeeperSake reached its heir
+              </span>
             ) : expired ? (
-              <span className="text-red-400">⚠️ Expired — KeeperHub will deliver soon</span>
+              <span className="text-red-400">
+                ⚠️ Expired — KeeperHub will deliver soon
+              </span>
             ) : (
               <span>You&apos;re alive.</span>
             )}
           </h1>
         </div>
 
+        {/* Countdown + heartbeat */}
         <div className="border border-zinc-900 rounded-2xl bg-zinc-950 p-8 mb-6">
           <div className="text-center mb-6">
             <div className="text-6xl font-mono font-semibold tracking-tight mb-2">
               {delivered ? "—" : formatDuration(Math.max(0, remaining))}
             </div>
-            <div className="text-sm text-zinc-500">until delivery is allowed</div>
+            <div className="text-sm text-zinc-500">
+              until delivery is allowed
+            </div>
           </div>
 
           <div className="h-2 bg-zinc-900 rounded-full overflow-hidden mb-8">
@@ -178,11 +219,11 @@ export default function DashboardPage() {
           </div>
 
           <button
-            disabled={delivered || isPending || mining || pendingHb}
+            disabled={delivered || hbPending || hbMining || pendingHb}
             onClick={onHeartbeatClick}
             className="w-full bg-white text-black hover:bg-zinc-200 disabled:opacity-40 disabled:cursor-not-allowed font-medium py-4 rounded-xl text-lg"
           >
-            {isPending || mining || pendingHb
+            {hbPending || hbMining || pendingHb
               ? "Beating…"
               : delivered
               ? "Cannot heartbeat"
@@ -192,14 +233,10 @@ export default function DashboardPage() {
 
         <KeeperHubStatus />
 
-        <dl className="border border-zinc-900 rounded-xl bg-zinc-950 divide-y divide-zinc-900 text-sm">
+        {/* Will details */}
+        <dl className="border border-zinc-900 rounded-xl bg-zinc-950 divide-y divide-zinc-900 text-sm mb-6">
           <Row label="Heir">
-            <Link
-              href={`/heir/${heir}`}
-              className="font-mono text-zinc-200 hover:underline"
-            >
-              {shortAddr(heir)}
-            </Link>
+            <span className="font-mono text-zinc-200">{shortAddr(heir)}</span>
           </Row>
           <Row label="Amount">
             <span className="font-mono text-zinc-200">
@@ -207,12 +244,12 @@ export default function DashboardPage() {
             </span>
           </Row>
           <Row label="Timeout">
-            <span className="text-zinc-200">{formatDuration(Number(timeout))}</span>
+            <span className="text-zinc-200">
+              {formatDuration(Number(timeout))}
+            </span>
           </Row>
           <Row label="Last heartbeat">
-            <span className="text-zinc-200">
-              {formatDuration(elapsed)} ago
-            </span>
+            <span className="text-zinc-200">{formatDuration(elapsed)} ago</span>
           </Row>
           <Row label="Will note hash">
             <span className="font-mono text-xs text-zinc-400 truncate max-w-[260px]">
@@ -228,19 +265,72 @@ export default function DashboardPage() {
           )}
         </dl>
 
-        <p className="mt-6 text-xs text-zinc-500 text-center">
-          Watching{" "}
-          <code className="text-zinc-400">
-            silenceOf({shortAddr(address)})
-          </code>
-          .
-        </p>
+        {/* Share link to heir */}
+        {!delivered && (
+          <div className="border border-zinc-900 rounded-xl bg-zinc-950 p-5 mb-6">
+            <div className="text-xs uppercase tracking-widest text-zinc-500 mb-2">
+              Send this to your heir
+            </div>
+            <div className="flex gap-2">
+              <input
+                readOnly
+                value={heirShareUrl}
+                onClick={(e) => e.currentTarget.select()}
+                className="flex-1 bg-zinc-900 border border-zinc-800 rounded-md px-3 py-2 font-mono text-xs text-zinc-200 focus:outline-none focus:border-zinc-600"
+              />
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(heirShareUrl);
+                  toast.success("Copied");
+                }}
+                className="text-xs bg-zinc-800 hover:bg-zinc-700 px-3 rounded-md whitespace-nowrap"
+              >
+                📋 Copy
+              </button>
+            </div>
+            <p className="text-xs text-zinc-500 mt-2 leading-relaxed">
+              Bookmark it for them. After delivery they can read your final
+              words there with cryptographic hash verification.
+            </p>
+          </div>
+        )}
+
+        {/* Danger zone */}
+        {!delivered && (
+          <details className="border border-zinc-900 rounded-xl bg-zinc-950 p-5">
+            <summary className="text-xs uppercase tracking-widest text-zinc-500 cursor-pointer select-none">
+              Danger zone
+            </summary>
+            <div className="mt-4">
+              <p className="text-sm text-zinc-400 mb-3 leading-relaxed">
+                Revoking deletes the will. Your heir gets nothing. Your USDC
+                stays in your wallet. Use this if you committed by mistake or
+                want to change the heir / amount.
+              </p>
+              <button
+                disabled={revokePending || revokeMining}
+                onClick={onRevokeClick}
+                className="text-sm border border-red-900 text-red-400 hover:bg-red-950/50 disabled:opacity-40 disabled:cursor-not-allowed font-medium px-4 py-2 rounded-md"
+              >
+                {revokePending || revokeMining
+                  ? "Revoking…"
+                  : "🛑 Revoke this KeeperSake"}
+              </button>
+            </div>
+          </details>
+        )}
       </main>
     </>
   );
 }
 
-function Row({ label, children }: { label: string; children: React.ReactNode }) {
+function Row({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="flex items-start justify-between gap-4 px-5 py-3.5">
       <dt className="text-zinc-500">{label}</dt>

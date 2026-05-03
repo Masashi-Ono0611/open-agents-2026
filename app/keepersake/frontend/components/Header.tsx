@@ -29,12 +29,6 @@ export function Header() {
           >
             Dashboard
           </Link>
-          <Link
-            href="/demo"
-            className="px-3 py-1.5 rounded-md hover:bg-zinc-900 text-zinc-300"
-          >
-            Demo
-          </Link>
           <div className="ml-2">
             <ConnectButtonWrapper />
           </div>
